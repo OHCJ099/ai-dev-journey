@@ -10,11 +10,13 @@ else:
 while True:
     line = input("> ")
     if line == "quit":
+        DATA_FILE.write_text(json.dumps(contacts, ensure_ascii=False, indent=2), encoding="utf-8")
         break
     if line.startswith("add "):
         parts = line.split()
         if len(parts) != 3:
             print("格式: add 姓名 电话")
             continue
+        contacts.append({"name": parts[1], "phone": parts[2]})   # ← append 归位到 add 分支内
     elif line == "list":
-        print(contacts)
+        print(contacts)       
