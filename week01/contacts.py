@@ -24,18 +24,21 @@ while True:
     elif line.startswith("del "):
         parts = line.split()
         if len(parts) != 2:
-            print("格式：del 序号")
+            print("格式: del 序号")
             continue
 
         try:
             del_index = int(parts[1])
         except ValueError:
             print("请输入数字")
+            continue
+
         if len(contacts) >= del_index >= 1:
             del_user = contacts.pop(del_index - 1)
             print(f"已删除 {del_user['name']} {del_user['phone']}")
         else:
-            print("数字不合法")        
+            print("数字不合法")    
+
     # list分支
     elif line == "list":
         for index, contact in enumerate(contacts, start = 1):
