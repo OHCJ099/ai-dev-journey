@@ -1,10 +1,7 @@
 """chat_cli v0.1 参考实现（答案key）—— 先自己写，卡住 25 分钟以上再看对应片段。
 
-运行（在 week01/chat_cli/ 目录下，按 plan.md 的目录结构拆分时）：
-    uv run python src/main.py
-
 本文件是「合并成单文件」的版本，方便你对照结构与逻辑；
-真正提交时请按 plan.md 拆成 llm.py / session.py / main.py，体现分层。
+真正提交时按 W3 任务拆成 llm.py / session.py / main.py，体现分层。
 """
 from __future__ import annotations
 
