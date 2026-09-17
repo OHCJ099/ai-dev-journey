@@ -36,8 +36,8 @@ while True:
             continue
         name = parts[1]
         for contact in contacts:
-            if name == contact["name"]:
-                print(f"找到了{name}!")
+            if name in contact["name"]:
+                print(f"找到了{contact["name"]} {contact["phone"]}!")
                 found = True
         if not found:
             print(f"没找到{name}")

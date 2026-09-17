@@ -78,6 +78,7 @@
 - Chroma 文档 https://docs.trychroma.com/
 - LangGraph 文档 https://langchain-ai.github.io/langgraph/
 - 中文 Agent 系统教程（RAG/LangGraph/面试题，2026 更新）https://github.com/didilili/ai-agents-from-zero
+  —— **按需检索、禁止通读**。映射：W3-W8 用 `01-1`/`01-3`；W9-W16 用 `04-1`~`04-5`；W17-W20 用 `03-1`/`03-2`；跳过 `02`（Coze/Dify 低代码）与 `05`（微调）
 - 面试向 RAG+Agent 速通 https://github.com/limouren2000/llms-dev-study
 
 ## 六、当前坐标
