@@ -23,10 +23,12 @@ while True:
             print("格式: add 姓名 电话")
             continue
         contacts.append({"name": parts[1], "phone": parts[2]})   # ← append 归位到 add 分支内
+
     # list分支
     elif line == "list":
-        print(contacts)  
-
+        for index, contact in enumerate(contacts, start = 1):
+            print(f"{index}. {contact['name']} {contact['phone']}")
+          
     # find分支     
     elif line.startswith("find "):
         found = False
@@ -34,13 +36,14 @@ while True:
         if len(parts) != 2:
             print("格式: find 姓名")
             continue
+
         name = parts[1]
-        for contact in contacts:
+        for index, contact in enumerate(contacts, start = 1):
             if name in contact["name"]:
-                print(f"找到了{contact["name"]} {contact["phone"]}!")
+                print(f"{index}. {contact['name']} {contact['phone']}")
                 found = True
         if not found:
             print(f"没找到{name}")
     
     else:
-        print("unknow command")
+        print("unknown command")
