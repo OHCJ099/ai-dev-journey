@@ -9,6 +9,7 @@
 - Windows 11；仓库 `D:\dev\ai-dev-journey`，uv 管理依赖，一律 `uv run python xxx.py`
 - 已完成：Python 分层写代码、大模型 API（流式/多轮/错误处理）、Prompt、FastAPI、**一套完整 RAG 项目（项目②）**
 - 每周 15-20 小时：工作日 1.5-2h，周末 3-4h
+  —— ⚠️ **已更新为 28 h/周**（工作日 4h + 周末 4-6h）；死线是 2027-02-01 春招开窗。见 `ROADMAP.md`。
 - 总路线 `ROADMAP.md`，进度台账 `progress.md`，验收标准 `handbook/06-验收协议.md`
 
 ## 本阶段目标
