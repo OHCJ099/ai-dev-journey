@@ -9,6 +9,7 @@
 | 2026-09-16 | ① Python | `week01/contacts.py` v1：add/list + 参数校验，commit `1a4ce70` | ❌ 讲不出来 | 抄完不知道在干嘛 → 触发体系重做 | 已建立三步法与子教练体系 |
 | 2026-09-16 | ① Python | json 持久化，commit `c506042`（含 `contacts.json`） | ✅ 已讲回（15:10 补做，5 行逐行讲通） | `append` 贴错分支（缩进=分支归属） | `find` 未完成 |
 | 2026-09-16 | ① Python | `week01/contacts.py` find 分支：`startswith` + 参数校验 + 标记变量 + "没找到"提示 + 未知命令兜底，commit `dc0d00a`（已 push） | ✅ 讲回通过（31–41 行逐行讲对） | 两次"改了没存盘"；`found = False` 写在循环内 → 搜第一条会多打一行"没找到" | 学习期关掉 VS Code AI 补全（卸载 Qoder CN / TraeCode + 全局 settings）；序号与「find 李 包含匹配」顺延 Day3 |
+| 2026-09-17 | ① Python | `contacts.py`：`find` 改 `in` 包含匹配 + 打印电话；`list`/`find` 带序号（`enumerate start=1`）；`del` 分支（`ValueError` 兜底 + 链式范围校验 + `pop` 取回被删记录）；commits `5c2399d`/`b431d0c`/`5d3be86`/`7c9add4`（已 push）。另：`notes/README.md` 笔记规范 | ✅ 6 项讲回全过（`in` vs `==`、`start=1`、`try` 范围、链式比较、下标 −1、`pop` vs `remove`） | 改了没保存 1 次；**存了跑了忘了提交 1 次**（`5d3be86` 缺 `continue`，由 `7c9add4` 补上） | W1 三项返修全部结清；明天开始拆模块 + 类型注解 |
 
 ## 待验收项（总指挥官关注）
 
