@@ -4,6 +4,7 @@ __pycache__/
 build/
 dist/
 wheels/
+
 *.egg-info
 
 # Virtual environments
@@ -11,3 +12,4 @@ wheels/
 
 # Secrets
 .env
+week01/contacts.json
