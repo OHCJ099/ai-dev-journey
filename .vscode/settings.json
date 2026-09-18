@@ -1,13 +1,17 @@
 {
-  "editor.suggest.enabled": false,
+  "editor.suggest.enabled": true,
   "editor.quickSuggestions": {
-    "other": false,
+    "other": true,
     "comments": false,
     "strings": false
   },
-  "editor.suggestOnTriggerCharacters": false,
+  "editor.suggestOnTriggerCharacters": true,
   "editor.wordBasedSuggestions": "off",
-  "editor.inlineSuggest.enabled": false,
   "editor.acceptSuggestionOnEnter": "off",
-  "editor.parameterHints.enabled": false
+  "editor.parameterHints.enabled": true,
+  "editor.inlineSuggest.enabled": false,
+  "python.analysis.typeCheckingMode": "basic",
+  "python.analysis.inlayHints.variableTypes": true,
+  "python.analysis.inlayHints.functionReturnTypes": true,
+  "editor.formatOnSave": false
 }
