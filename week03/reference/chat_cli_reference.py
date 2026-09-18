@@ -8,11 +8,11 @@ from __future__ import annotations
 import json
 import os
 import sys
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 from dotenv import load_dotenv
-from openai import APIError, APIConnectionError, APIStatusError, OpenAI
+from openai import APIConnectionError, APIError, APIStatusError, OpenAI
 
 # ---------- 配置 ----------
 BASE_URL = os.getenv("BASE_URL", "https://api.deepseek.com")
@@ -95,7 +95,7 @@ class Session:
 
     def save(self, sessions_dir: Path = SESSIONS_DIR) -> Path:
         sessions_dir.mkdir(parents=True, exist_ok=True)
-        path = sessions_dir / f"{datetime.now():%Y-%m-%d-%H%M%S}.json"
+        path = sessions_dir / f"{datetime.now(tz=UTC):%Y-%m-%d-%H%M%S}.json"
         path.write_text(
             json.dumps(
                 {"system": self.system_prompt, "messages": self.messages, "total_tokens": self.total_tokens},
