@@ -1,5 +1,3 @@
-import json
-
 from core import add_contact, delete_contact, find_contacts, list_contacts
 from storage import DATA_FILE, load_contacts, save_contacts
 
@@ -7,7 +5,7 @@ from storage import DATA_FILE, load_contacts, save_contacts
 def main() -> None:
     try:
         contacts = load_contacts(DATA_FILE)
-    except json.JSONDecodeError:
+    except ValueError:
         print("数据文件损坏，请检查 contacts.json")
         return
 
