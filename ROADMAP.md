@@ -139,12 +139,14 @@
 
 ## 六、当前坐标
 
-- **阶段**：① Python 基础 · **W1 已完成（2026-09-17 通过）→ 进入 W2「模块分层」**
-- **死线**：2027-02-01 春招开窗（距 2026-09-17 还有 136 天）；毕业 2027-06-01
+> 更新于 2026-09-19 16:40（W2 验收后）。**这里是「实际到哪」，不是计划。**
+
+- **阶段**：① Python 基础 · **W2 主体已完成（2026-09-19 验收通过），剩 `.env` + `httpx` 两个尾巴**
+- **死线**：内部目标日 2027-02-01（距 2026-09-19 还有 135 天）；毕业 2027-06-01
 - **投入**：28 h/周（起步两周 25h 试运行，10/5 复盘）；里程碑见「二·二」
-- **W1 交付**：`week01/contacts.py`（`add`/`list`/`find`/`del`/`quit` 存盘 + 校验 + 越界兜底 + 序号），commit `1a4ce70`→`7c9add4`
-- **W2 进行中**：拆成 `week01/contacts/{storage,core,cli}.py` + 全部类型注解 + `contacts.json` 移出版本库；任务见 `handbook/07-当前任务指令.md`
-- **W2 遗留检查点**：`Ctrl+S` 存盘习惯（3 天里踩了 3 次）
+- **W1 交付**：`week01/contacts.py` 单文件（`add`/`list`/`find`/`del`/`quit` + 校验 + 越界兜底 + 序号），commit `1a4ce70`→`7c9add4`（该文件已删，git 历史可查）
+- **W2 交付**：`week01/contacts/{storage,core,cli}.py` 三层 + 全部类型注解 + `pathlib`；`test_contacts.py`（9 条原生 assert）；`load_contacts` 三层结构校验（畸形 json 不崩、不覆盖原文件）；`except EOFError` 退出存盘；`ruff` 全仓通过；`contacts.json` 移出版本库
+- **W2 未完成**：`.env` 读取 + `httpx` 发一次请求（新建 `week02/`）；`week01/contacts/README.md` 落后于代码；**Ctrl+C（`KeyboardInterrupt`）仍会丢数据**（`except EOFError` 只覆盖了输入结束这一条路径）
 - **W2 结束要能**：不看代码回答「改一个功能要动哪个文件」「把 json 换成数据库要动哪几个文件」（分层考试题）
 
 概念定位与「什么不学」见 `notes/概念地图.md`；教程两条轨道见 `notes/README.md`；投递节点见 `docs/求职时间线.md`。
