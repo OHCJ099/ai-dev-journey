@@ -6,7 +6,7 @@ def add_contact(contacts: list[dict[str, str]], name: str, phone: str) -> None:
 
 def list_contacts(contacts: list[dict[str, str]]) -> list[tuple[int, dict[str, str]]]:
     new_list = []
-    # start=1 -- 用户看：自己新开的列表，负责"给人看"
+    # start=1：序号从 1 开始，是给用户看的（不是索引）
     for index, contact in enumerate(contacts ,start=1):
         new_list.append((index, contact))
     return new_list
@@ -14,13 +14,13 @@ def list_contacts(contacts: list[dict[str, str]]) -> list[tuple[int, dict[str, s
 def find_contacts(contacts: list[dict[str, str]], keyword: str) -> list[tuple[int, dict[str, str]]]:
     new_list = []
     for index, contact in enumerate(contacts, start=1):
-        # in -- 子串匹配(区分"name" in c) c:列表
+        # in：是子串匹配，为了区分"name" in c，c是字典
         if keyword in contact["name"]:
             new_list.append((index, contact))
     return new_list
 
 def delete_contact(contacts: list[dict[str, str]], user_no: int) -> dict[str, str] | None:
-    # len(contact)：user_no对齐视觉序号非索引，处理索引时user_no - 1
+    # len(contacts)：user_no收的是用户号与len对齐，处理索引时再user_no - 1
     if 1 <= user_no <= len(contacts):   
         return contacts.pop(user_no - 1)
     return None
