@@ -45,7 +45,7 @@
 | 周 | 阶段 | 学什么 | 交付物 | 验收标准 | 完成日 |
 |---|---|---|---|---|---|
 | W1 | ① Python 基础 | 环境/uv/git、list/dict/循环/if、文件 IO、异常 | `week01/contacts.py`（增删查+json 持久化） | 能不看代码讲清每行；能改一处加功能 | ✅ 09-17 |
-| W2 | ① | 函数、模块分层、类型注解、`pathlib`、`.env`、`httpx` | contacts 拆成 `storage/core/cli`；`notes/` 错题本 + `test_contacts.py`（原生 assert） | `ruff check` 无错；分层清楚（storage 里没有 print）；畸形 json 不崩且不覆盖原文件 | 09-30 |
+| W2 | ① | 函数、模块分层、类型注解、`pathlib`、`.env`、`httpx` | contacts 拆成 `storage/core/cli`；`notes/` 错题本 + `test_contacts.py`（原生 assert） | `ruff check` 无错；分层清楚（storage 里没有 print）；畸形 json 不崩且不覆盖原文件；**意外退出（EOF/关窗口）不丢数据** | 09-30 |
 | W3 | ② 大模型 API | DeepSeek API 首调、流式、messages/role、token 与成本、错误处理 | `week03/hello_api.py` + `chat_cli` v0.1 | 能口答 system/user/assistant、temperature、stream 的差别；401/超时都不崩 | 10-05 |
 | W4 | ② | 多轮上下文管理、历史裁剪、参数化（argparse）、日志 | `chat_cli` v1 完整版 + README | 连续 10 轮对话不走样；`/clear` `/system` `/save` 可用；有 token 统计 | 10-10 |
 | W5 | ② Prompt + 后端 | Prompt 基础：角色设定、少样本、结构化输出(JSON)、温度实验 | `week05/prompt_lab.py`（同一问题的多 prompt 对比） | 能讲清每种手法的适用场景；实验有输出对比表 | 10-15 |
