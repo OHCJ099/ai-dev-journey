@@ -14,7 +14,7 @@ def load_contacts(path: Path) -> list[dict[str, str]]:
     # 异常情况：不能用return，否则返回给cli时以为是对的，后续又报错，这里直接raise
     # 多重判断由大到小
     if not isinstance(data, list):
-        raise ValueError("读取的不是列表！") # 为什么不用TypeError?因为 Cli 接不住这个TypeError，他们父子不同级 # noqa: TRY004 —— 这不是参数校验，是文件内容校验；三种错要抛同一种
+        raise ValueError("读取的不是列表！") # noqa: TRY004 —— 这不是参数校验，是文件内容校验；三种错要抛同一种
     for c in data:
         if not isinstance(c, dict):
             raise ValueError("列表内的值不是字典！") # noqa: TRY004 —— 这不是参数校验，是文件内容校验；三种错要抛同一种
