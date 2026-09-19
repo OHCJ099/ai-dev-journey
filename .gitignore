@@ -13,3 +13,5 @@ wheels/
 # Secrets
 .env
 week01/contacts.json
+# 临时草稿文件
+pelican-cycling.svg
