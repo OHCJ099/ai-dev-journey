@@ -13,7 +13,12 @@ def main() -> None:
 
     # 主循环
     while True:
-        line = input("> ")
+        try:
+            line = input("> ")
+        except EOFError:
+            print("...")
+            save_contacts(DATA_FILE, contacts)
+            return
 
         # add分支
         if line.startswith("add "):
@@ -63,7 +68,6 @@ def main() -> None:
         elif line == "quit":
             save_contacts(DATA_FILE, contacts)
             break
-
         else:
             print("unknown command")
 
