@@ -1,7 +1,7 @@
 import json
 
-from storage import load_contacts, save_contacts, DATA_FILE
-from core import add_contact, list_contacts, find_contacts, delete_contact
+from core import add_contact, delete_contact, find_contacts, list_contacts
+from storage import DATA_FILE, load_contacts, save_contacts
 
 
 def main() -> None:
