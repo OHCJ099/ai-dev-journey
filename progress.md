@@ -171,3 +171,39 @@ $ printf 'add 李雷 111\nadd 韩梅梅 222\nlist\nfind 李\nfind 王\nfind 赵�
 **18:45 更正（总指挥自我纠错）**：本轮抽查第 1 题（`.parent` 层级），子教练当场判学员「不通过」，**是误判**。学员答「去一层 = `...\week01\contacts`；去两层 = `...\week01`」实测完全正确；误判原因是**题面「去掉第二个」有歧义**（可读成「去掉第 2 个 `.parent`」）。已在 `logs/2026-09-18-日报.md` 讲回表与 `progress.md` 台账行标注撤销。
 
 **这是三天里第 2 次判错学员**（第 1 次：09-17 示例输出写了具体值「王」，学员抗议正确）。**教训**：教练出题必须无歧义；判定「不通过」前先自检题面；学员反驳时先复核自己，不要默认学员错。拟新增一条硬规则（待学员点头）：**「判定不通过前，先确认自己的题面只有一种读法；学员反驳时优先复核自己。」**
+
+## 总指挥验收记录 · 2026-09-20 14:16（第 4 轮 · W2 收口）
+
+**判定：W2 通过。** 5 条验收标准中 4 条满足，1 条部分满足（Ctrl+C / 进程被 kill 仍丢数据）→ 挂 W3 第 1 件收掉，不卡住 W2。
+
+**总指挥自己实跑的证据**：
+
+| 检查 | 命令 | 结果 |
+|---|---|---|
+| lint | `uvx ruff check .` | `All checks passed!` |
+| 测试 | `uv run python week01/contacts/test_contacts.py` | `ALL TESTS PASSED`（9 条 assert，括号已全部去掉） |
+| `.env` 安全 | `git check-ignore -v .env` + `git log --all --name-only \| grep -x ".env"` | `.gitignore:14` 命中；**`.env` 从未进入任何提交** |
+| 读 key | `uv run python week02/read_env.py` | `发现key: 长度 35` |
+| **`.env` 缺失** | 在无 `.env` 的临时目录跑副本 | `没找到key`，**不崩** |
+| HTTP | `uv run python week02/first_request.py` | `状态码: 200 URL: https://httpbin.org/get` |
+| **网络不可达** | 副本换成无效域名 | 抛 `httpx.ConnectError` **未捕获 → 崩**（遗留项） |
+| 推送/工作区 | `git log origin/main..HEAD` / `git status --short` | 0 条未推送 / 干净 |
+
+**验收标准逐条判定**（`ROADMAP.md` W2 行）：
+1. `ruff check` 无错 ✅
+2. 分层清楚（storage 里没有 print）✅
+3. 畸形 json 不崩且不覆盖原文件 ✅
+4. **意外退出（EOF/关窗口）不丢数据** —— ⚠️ `EOFError` ✅ / **Ctrl+C（`KeyboardInterrupt`）❌** / **进程被 kill ❌** → 挂 W3 第 1 件（`try/finally`）
+5. `.env` 不进版本库 ✅
+
+**体系漏教（本轮最重要的发现）**：A 题「误提交 key 怎么办」学员不通过，答「你没教过我 git 删文件或者撤回，我实话实说」—— `grep -rn "git rm\|git revert\|git reset\|--cached"` 全仓 **0 处命中**，**git 撤回操作从未进过课程**。学员答得对且诚实。已列入 W3 第 2 件（15 分钟补课，含「key 上过公网必须吊销换新」这个真正答案）。
+
+**B 题（分页序号归属）部分通过**：显示 `1` ✅；「由 cli 决定」方向对但表述不准 —— 正解是 **core 必须能返回全局真实序号（`start` 参数），cli 只决定显示什么**；若 core 把序号写死成 1/2/3，cli 就再也拿不到「这是第 6 条」的信息（信息在 core 层被销毁）。W3 复验。
+
+**另一条遗留**：`first_request.py` 网络不可达时 `ConnectError` 未捕获会崩（总指挥实测）。`httpx` 默认超时仅 5 秒，W3 调 API 必须显式设 timeout + 兜住异常。
+
+**07 已重写**为 W3 起步三件（Ctrl+C 修复 / git 撤回补课 / `hello_api.py` 首调 DeepSeek）。
+
+**本轮外部输入**：学员把体系总结交给 Kimi K3 审计，提 6 条**全部为真**（取行命令语义脆弱、`ROADMAP` 坐标滞后、概念地图 W2 状态未刷、行数数字无法证实、06 的「8 条硬规则」与表不符、README 落后），已全部修完（commit `f9e10bb` / `76b2344` / `9a1fe72`）。**这是五轮外部审计里唯一 0 条虚构的一次。**
+
+**另：本轮发现一条规则此前只写在总指挥记忆里、从未落盘** —— 「没学过的 API 必须先讲再出题」。子教练读的是文件、读不到记忆，因此**必然重犯**（09-18 与 09-20 各一次）。已落盘到 `.hermes.md` 硬规则第 9 条 + `handbook/00` 4·1 + 5 份提示词 + `handbook/06` 审计第 6 项红线（commit `8cd04c6`）。**教训：约束子教练的规则必须落文件，写在记忆里等于没写。**

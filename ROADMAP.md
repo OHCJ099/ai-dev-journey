@@ -45,7 +45,7 @@
 | 周 | 阶段 | 学什么 | 交付物 | 验收标准 | 完成日 |
 |---|---|---|---|---|---|
 | W1 | ① Python 基础 | 环境/uv/git、list/dict/循环/if、文件 IO、异常 | `week01/contacts.py`（增删查+json 持久化） | 能不看代码讲清每行；能改一处加功能 | ✅ 09-17 |
-| W2 | ① | 函数、模块分层、类型注解、`pathlib`、`.env`、`httpx` | contacts 拆成 `storage/core/cli`；`notes/` 错题本 + `test_contacts.py`（原生 assert） | `ruff check` 无错；分层清楚（storage 里没有 print）；畸形 json 不崩且不覆盖原文件；**意外退出（EOF/关窗口）不丢数据** | 09-30 |
+| W2 | ① | 函数、模块分层、类型注解、`pathlib`、`.env`、`httpx` | contacts 拆成 `storage/core/cli`；`notes/` 错题本 + `test_contacts.py`（原生 assert） | `ruff check` 无错；分层清楚（storage 里没有 print）；畸形 json 不崩且不覆盖原文件；**意外退出（EOF/关窗口）不丢数据** | ✅ **09-20**（Ctrl+C 一条挂 W3 第 1 件） |
 | W3 | ② 大模型 API | DeepSeek API 首调、流式、messages/role、token 与成本、错误处理 | `week03/hello_api.py` + `chat_cli` v0.1 | 能口答 system/user/assistant、temperature、stream 的差别；401/超时都不崩 | 10-05 |
 | W4 | ② | 多轮上下文管理、历史裁剪、参数化（argparse）、日志 | `chat_cli` v1 完整版 + README | 连续 10 轮对话不走样；`/clear` `/system` `/save` 可用；有 token 统计 | 10-10 |
 | W5 | ② Prompt + 后端 | Prompt 基础：角色设定、少样本、结构化输出(JSON)、温度实验 | `week05/prompt_lab.py`（同一问题的多 prompt 对比） | 能讲清每种手法的适用场景；实验有输出对比表 | 10-15 |
@@ -139,14 +139,15 @@
 
 ## 六、当前坐标
 
-> 更新于 2026-09-20 13:55（W2 内容全部完成）。**这里是「实际到哪」，不是计划。**
+> 更新于 2026-09-20 14:20（**W2 验收通过**）。**这里是「实际到哪」，不是计划。**
 
-- **阶段**：① Python 基础 · **W2 全部内容已做完，待总指挥验收**（含 `.env`、`httpx` 两个尾巴）
+- **阶段**：① Python 基础 · **W2 已完成并验收通过**（2026-09-20）→ **下一格进 W3（阶段② 大模型 API）**
 - **死线**：内部目标日 2027-02-01（距 2026-09-20 还有 134 天）；毕业 2027-06-01
 - **投入**：28 h/周（起步两周 25h 试运行，10/5 复盘）；里程碑见「二·二」
 - **W1 交付**：`week01/contacts.py` 单文件（`add`/`list`/`find`/`del`/`quit` + 校验 + 越界兜底 + 序号），commit `1a4ce70`→`7c9add4`（该文件已删，git 历史可查）
 - **W2 交付**：`week01/contacts/{storage,core,cli}.py` 三层 + 全部类型注解 + `pathlib`；`test_contacts.py`（9 条原生 assert）；`load_contacts` 三层结构校验（畸形 json 不崩、不覆盖原文件）；`except EOFError` 退出存盘；`ruff` 全仓通过；`contacts.json` 移出版本库；`week01/contacts/README.md` 已与代码对齐；`week02/read_env.py`（`load_dotenv` + `os.getenv`，只打印长度不打印 key）+ `week02/first_request.py`（`httpx.get` + 先判状态码再取字段）
-- **W2 未完成**：**Ctrl+C（`KeyboardInterrupt`）仍会丢数据**（`except EOFError` 只覆盖了输入结束这一条路径）；`week02/` 暂无 `README.md`
-- **W2 结束要能**：不看代码回答「改一个功能要动哪个文件」「把 json 换成数据库要动哪几个文件」（分层考试题）—— 上一轮已答对，分页序号归属那题部分通过，下一轮复验
+- **W2 验收（2026-09-20 总指挥实跑）**：5 条标准中 **4 条满足**；未满足 1 条 = 「意外退出（EOF/关窗口）不丢数据」—— `EOFError` 已修，**Ctrl+C（`KeyboardInterrupt`）与进程被 kill 仍丢数据**，已挂到 W3 第 1 件（`try/finally` 一次覆盖全部退出路径），不卡住 W2。
+- **W2 暴露的体系漏教**：`grep` 全仓确认「git 撤回 / 删文件」从未进过课程（学员 A 题诚实答「你没教过」，答得对）→ 已列入 W3 第 2 件。
+- **W2 结束要能**：不看代码回答「改一个功能要动哪个文件」「把 json 换成数据库要动哪几个文件」—— 前者已过；**分页序号归属**那题部分通过（正解：core 必须能返回全局真实序号，cli 只决定显示），W3 复验。
 
 概念定位与「什么不学」见 `notes/概念地图.md`；教程两条轨道见 `notes/README.md`；投递节点见 `docs/求职时间线.md`。
