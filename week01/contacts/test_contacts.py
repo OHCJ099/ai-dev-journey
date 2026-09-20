@@ -17,11 +17,11 @@ assert len(find_contacts(contacts, "甲")) == 3
 assert find_contacts(contacts, "张") == []
 
 # ---- delete_contact ----
-assert(delete_contact(contacts, 1)) == ({"name": "甲1", "phone": "111"})
+assert delete_contact(contacts, 1) == {"name": "甲1", "phone": "111"}
 assert len(contacts) == 5
-assert(delete_contact(contacts, 5)) == ({"name": "乙3", "phone": "111"})
-assert(delete_contact(contacts, 6)) is None
-assert(delete_contact(contacts, 0)) is None
-assert(delete_contact(contacts, -1)) is None
+assert delete_contact(contacts, 5) == {"name": "乙3", "phone": "111"}
+assert delete_contact(contacts, 6) is None
+assert delete_contact(contacts, 0) is None
+assert delete_contact(contacts, -1) is None
 
 print("ALL TESTS PASSED")
