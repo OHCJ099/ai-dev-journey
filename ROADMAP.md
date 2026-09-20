@@ -139,14 +139,14 @@
 
 ## 六、当前坐标
 
-> 更新于 2026-09-19 16:40（W2 验收后）。**这里是「实际到哪」，不是计划。**
+> 更新于 2026-09-20 13:55（W2 内容全部完成）。**这里是「实际到哪」，不是计划。**
 
-- **阶段**：① Python 基础 · **W2 主体已完成（2026-09-19 验收通过），剩 `.env` + `httpx` 两个尾巴**
-- **死线**：内部目标日 2027-02-01（距 2026-09-19 还有 135 天）；毕业 2027-06-01
+- **阶段**：① Python 基础 · **W2 全部内容已做完，待总指挥验收**（含 `.env`、`httpx` 两个尾巴）
+- **死线**：内部目标日 2027-02-01（距 2026-09-20 还有 134 天）；毕业 2027-06-01
 - **投入**：28 h/周（起步两周 25h 试运行，10/5 复盘）；里程碑见「二·二」
 - **W1 交付**：`week01/contacts.py` 单文件（`add`/`list`/`find`/`del`/`quit` + 校验 + 越界兜底 + 序号），commit `1a4ce70`→`7c9add4`（该文件已删，git 历史可查）
-- **W2 交付**：`week01/contacts/{storage,core,cli}.py` 三层 + 全部类型注解 + `pathlib`；`test_contacts.py`（9 条原生 assert）；`load_contacts` 三层结构校验（畸形 json 不崩、不覆盖原文件）；`except EOFError` 退出存盘；`ruff` 全仓通过；`contacts.json` 移出版本库
-- **W2 未完成**：`.env` 读取 + `httpx` 发一次请求（新建 `week02/`）；`week01/contacts/README.md` 落后于代码；**Ctrl+C（`KeyboardInterrupt`）仍会丢数据**（`except EOFError` 只覆盖了输入结束这一条路径）
-- **W2 结束要能**：不看代码回答「改一个功能要动哪个文件」「把 json 换成数据库要动哪几个文件」（分层考试题）
+- **W2 交付**：`week01/contacts/{storage,core,cli}.py` 三层 + 全部类型注解 + `pathlib`；`test_contacts.py`（9 条原生 assert）；`load_contacts` 三层结构校验（畸形 json 不崩、不覆盖原文件）；`except EOFError` 退出存盘；`ruff` 全仓通过；`contacts.json` 移出版本库；`week01/contacts/README.md` 已与代码对齐；`week02/read_env.py`（`load_dotenv` + `os.getenv`，只打印长度不打印 key）+ `week02/first_request.py`（`httpx.get` + 先判状态码再取字段）
+- **W2 未完成**：**Ctrl+C（`KeyboardInterrupt`）仍会丢数据**（`except EOFError` 只覆盖了输入结束这一条路径）；`week02/` 暂无 `README.md`
+- **W2 结束要能**：不看代码回答「改一个功能要动哪个文件」「把 json 换成数据库要动哪几个文件」（分层考试题）—— 上一轮已答对，分页序号归属那题部分通过，下一轮复验
 
 概念定位与「什么不学」见 `notes/概念地图.md`；教程两条轨道见 `notes/README.md`；投递节点见 `docs/求职时间线.md`。
