@@ -46,7 +46,7 @@
 |---|---|---|---|---|---|
 | W1 | ① Python 基础 | 环境/uv/git、list/dict/循环/if、文件 IO、异常 | `week01/contacts.py`（增删查+json 持久化） | 能不看代码讲清每行；能改一处加功能 | ✅ 09-17 |
 | W2 | ① | 函数、模块分层、类型注解、`pathlib`、`.env`、`httpx` | contacts 拆成 `storage/core/cli`；`notes/` 错题本 + `test_contacts.py`（原生 assert） | `ruff check` 无错；分层清楚（storage 里没有 print）；畸形 json 不崩且不覆盖原文件；**意外退出（EOF/关窗口）不丢数据** | ✅ **09-20**（Ctrl+C 一条挂 W3 第 1 件） |
-| W3 | ② 大模型 API | DeepSeek API 首调、流式、messages/role、token 与成本、错误处理；**+ 异步 `async/await` 认识（W6 前置）** | `week03/hello_api.py` + `chat_cli` v0.1 | 能口答 system/user/assistant、temperature、stream 的差别；401/超时都不崩；能讲清 `async/await` 在解决什么问题 | 10-05 |
+| W3 | ② 大模型 API | DeepSeek API 首调、messages/role、token 与成本、错误处理；**+ 异步 `async/await` 认识（W6 前置）** | `week03/hello_api.py` + `week02/first_request_async.py` | 口答 system/user/assistant、stream 差别 ✅；401/超时都不崩 ✅；讲清 `async/await` 解决什么 ✅ | ✅ **09-21**（temperature 归 W5 温度实验；流式代码与 `chat_cli v0.1` 顺延 W4） |
 | W4 | ② | 多轮上下文管理、历史裁剪、参数化（argparse）、日志 | `chat_cli` v1 完整版 + README | 连续 10 轮对话不走样；`/clear` `/system` `/save` 可用；有 token 统计 | 10-10 |
 | W5 | ② Prompt + 后端 | Prompt 基础：角色设定、少样本、结构化输出(JSON)、温度实验 | `week05/prompt_lab.py`（同一问题的多 prompt 对比） | 能讲清每种手法的适用场景；实验有输出对比表 | 10-15 |
 | W6 | ② | FastAPI 最小：GET/POST、**Pydantic v2 模型（独立讲回）**、uvicorn、`async def` 路由 | 把对话能力包成 `/chat` 接口 | `curl` 能调通；能讲清「接口」和「函数」的区别；能讲清 pydantic 校验失败时返回什么 | 10-20 |
@@ -139,14 +139,16 @@
 
 ## 六、当前坐标
 
-> 更新于 2026-09-21（**毕设选题已定**）。**这里是「实际到哪」，不是计划。**
+> 更新于 2026-09-21 15:40（**W3 验收通过**）。**这里是「实际到哪」，不是计划。**
 
-- **阶段**：① Python 基础 · **W2 已完成并验收通过**（2026-09-20）→ **下一格进 W3（阶段② 大模型 API）**
+- **阶段**：**阶段② 大模型 API · W3 已通过**（2026-09-21）→ **下一格进 W4（多轮上下文 → `chat_cli` v1）**
 - **死线**：内部目标日 2027-02-01（距 2026-09-21 还有 133 天）；毕业 2027-06-01
 - **毕设（2026-09-21 选题会已定）**：**#91「基于大语言模型与 RAG 技术的企业制度智能检索与问答系统」，导师林敏** —— 与项目②同构，**零额外工作量**，语料收窄为「企业制度文档」（只影响 W9 数据准备）；答辩/开题/中期日期待学校通知
 - **投入**：28 h/周（起步两周 25h 试运行，10/5 复盘）；里程碑见「二·二」
 - **W1 交付**：`week01/contacts.py` 单文件（`add`/`list`/`find`/`del`/`quit` + 校验 + 越界兜底 + 序号），commit `1a4ce70`→`7c9add4`（该文件已删，git 历史可查）
 - **W2 交付**：`week01/contacts/{storage,core,cli}.py` 三层 + 全部类型注解 + `pathlib`；`test_contacts.py`（9 条原生 assert）；`load_contacts` 三层结构校验（畸形 json 不崩、不覆盖原文件）；`except EOFError` 退出存盘；`ruff` 全仓通过；`contacts.json` 移出版本库；`week01/contacts/README.md` 已与代码对齐；`week02/read_env.py`（`load_dotenv` + `os.getenv`，只打印长度不打印 key）+ `week02/first_request.py`（`httpx.get` + 先判状态码再取字段）
+- **W3 交付**：`week03/hello_api.py`（中转端点 + `deepseek-flash` + 关思考模式；`try/except/else` 四类错误分类含 402/429；`usage` 三个 token 数 + 单次费用核算，算式与平台 `cost_cny` 逐位吻合）；`week02/first_request_async.py`（异步版 `httpx`）；`week01/contacts/cli.py` 改 `try/finally` 覆盖全部退出路径（Ctrl+C 实测存盘）
+- **W3 验收（2026-09-21 总指挥实跑）**：4 项任务全过；**学员当场吊销了泄露的旧 key**（旧 key 实测已失效）；本仓库 `git log --all` 全扫描确认 `.env` 从未进入任何提交。**未覆盖**：`temperature`（归 W5 温度实验）、流式代码与 `chat_cli v0.1`（顺延 W4）
 - **W2 验收（2026-09-20 总指挥实跑）**：5 条标准中 **4 条满足**；未满足 1 条 = 「意外退出（EOF/关窗口）不丢数据」—— `EOFError` 已修，**Ctrl+C（`KeyboardInterrupt`）与进程被 kill 仍丢数据**，已挂到 W3 第 1 件（`try/finally` 一次覆盖全部退出路径），不卡住 W2。
 - **W2 暴露的体系漏教**：`grep` 全仓确认「git 撤回 / 删文件」从未进过课程（学员 A 题诚实答「你没教过」，答得对）→ 已列入 W3 第 2 件。
 - **W2 结束要能**：不看代码回答「改一个功能要动哪个文件」「把 json 换成数据库要动哪几个文件」—— 前者已过；**分页序号归属** 09-21 复验通过（正解：core 必须能返回全局真实序号，cli 只决定显示），此项关闭。
