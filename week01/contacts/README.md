@@ -9,7 +9,7 @@
 - `del <用户号>` 按序号删除
 - `quit` 退出并保存
 
-存盘：`quit` 和意外退出（输入结束 / `EOFError`/ Ctrl+C 中断也会保存）都会保存，其余操作不落盘。
+存盘：`quit`、输入结束（`EOFError`）、Ctrl+C 中断都会保存，其余操作不落盘。
 
 数据损坏：`contacts.json` 结构不对时提示「数据文件损坏，请检查 contacts.json」，不会覆盖原文件。
 
