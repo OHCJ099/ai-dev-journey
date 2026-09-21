@@ -23,7 +23,9 @@
 5. W8：**项目①定稿** —— 带 Web 界面的多轮对话应用：README 别人能照着跑、能 3 分钟讲清架构
 
 ## 关键事实（别给我错的）
-- DeepSeek：base_url `https://api.deepseek.com`，模型 `deepseek-flash`（便宜快）/ `deepseek-v4-pro`，OpenAI 兼容
+- **当前主用（2026-09-21 起）**：tokenrhythm 中转，base_url `https://tokenrhythm.studio/v1`，模型 `deepseek-flash`，key 存 `.env` 的 `TOKENRHYTHM_API_KEY`（官方直连账号欠费停用，实测 402 Insufficient Balance）
+- 官方直连（备用）：base_url `https://api.deepseek.com`，模型 `deepseek-flash` / `deepseek-v4-pro`，OpenAI 兼容 —— **两者 SDK 用法完全相同，只换 base_url + key**
+- **中转的坑**：`deepseek-flash` 思考模式**默认开启**，思维链（`reasoning_content`）token 计入 completion_tokens 计费；不需要时传 `extra_body={"thinking": {"type": "disabled"}}`
 - 通义千问（免费额度）：base_url `https://dashscope.aliyuncs.com/compatible-mode/v1`，模型 `qwen-plus`
 - key 一律放 `.env`（`python-dotenv` 读），**绝不写进代码、绝不提交**
 - 官方文档：https://api-docs.deepseek.com/zh-cn/
