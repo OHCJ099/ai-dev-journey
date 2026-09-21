@@ -149,6 +149,7 @@
 - **W2 交付**：`week01/contacts/{storage,core,cli}.py` 三层 + 全部类型注解 + `pathlib`；`test_contacts.py`（9 条原生 assert）；`load_contacts` 三层结构校验（畸形 json 不崩、不覆盖原文件）；`except EOFError` 退出存盘；`ruff` 全仓通过；`contacts.json` 移出版本库；`week01/contacts/README.md` 已与代码对齐；`week02/read_env.py`（`load_dotenv` + `os.getenv`，只打印长度不打印 key）+ `week02/first_request.py`（`httpx.get` + 先判状态码再取字段）
 - **W2 验收（2026-09-20 总指挥实跑）**：5 条标准中 **4 条满足**；未满足 1 条 = 「意外退出（EOF/关窗口）不丢数据」—— `EOFError` 已修，**Ctrl+C（`KeyboardInterrupt`）与进程被 kill 仍丢数据**，已挂到 W3 第 1 件（`try/finally` 一次覆盖全部退出路径），不卡住 W2。
 - **W2 暴露的体系漏教**：`grep` 全仓确认「git 撤回 / 删文件」从未进过课程（学员 A 题诚实答「你没教过」，答得对）→ 已列入 W3 第 2 件。
-- **W2 结束要能**：不看代码回答「改一个功能要动哪个文件」「把 json 换成数据库要动哪几个文件」—— 前者已过；**分页序号归属**那题部分通过（正解：core 必须能返回全局真实序号，cli 只决定显示），W3 复验。
+- **W2 结束要能**：不看代码回答「改一个功能要动哪个文件」「把 json 换成数据库要动哪几个文件」—— 前者已过；**分页序号归属** 09-21 复验通过（正解：core 必须能返回全局真实序号，cli 只决定显示），此项关闭。
+- **W3 进行中（2026-09-21）**：起步四格当日全部完成 —— ① `cli.py` `try/finally` 覆盖全部退出路径（commit `82edb3e`，Ctrl+C 不再丢数据）；② git 撤回补课 + key 吊销演练（临时仓库完成，复验通过）；③ `week03/hello_api.py` 首调大模型 API 成功（非流式 + 四类错误分类 + 429 分支 + 单次费用核算 `0.000094 元` 与中转 `cost_cny` 逐位吻合，commit `57a4cf8`）；④ `week02/first_request_async.py` async/await 认识（W6 前置）。**主用端点已换 tokenrhythm 中转**（官方账号欠费 402，key 存 `.env` 的 `TOKENRHYTHM_API_KEY`）。
 
 概念定位与「什么不学」见 `notes/概念地图.md`；教程两条轨道见 `notes/README.md`；投递节点见 `docs/求职时间线.md`。
