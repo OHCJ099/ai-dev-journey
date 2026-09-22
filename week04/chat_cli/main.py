@@ -29,7 +29,7 @@ def main() -> None:
 
         # TODO(3) 把 reply 接进 history（调 append_reply）——
         #         顺序想一下：应该在 ask 之前还是之后？为什么？
-        append_reply(history,reply)
+        append_reply(history, reply)
 
         print(reply)
         print(f"[本轮 {tokens} tokens]")  # 不累计，只是让你看见它随轮数变大
