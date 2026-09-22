@@ -11,6 +11,7 @@
    那是 W3 时的一个旧设计，**实际结构是 llm.py + main.py，没有 session.py**。
    2026-09-22 已移到 week04 并改正（原审计报告 B9 项）。
 """
+
 from __future__ import annotations
 
 import json
@@ -24,7 +25,9 @@ from openai import APIConnectionError, APIError, APIStatusError, OpenAI
 
 # ---------- 配置 ----------
 BASE_URL = os.getenv("BASE_URL", "https://api.deepseek.com")
-MODEL = os.getenv("MODEL", "deepseek-flash")   # 通义改 https://dashscope.aliyuncs.com/compatible-mode/v1 + qwen-plus
+MODEL = os.getenv(
+    "MODEL", "deepseek-flash"
+)  # 通义改 https://dashscope.aliyuncs.com/compatible-mode/v1 + qwen-plus
 DEFAULT_SYSTEM = "你是一个严谨的中文技术助手，回答简洁准确。"
 SESSIONS_DIR = Path("sessions")
 
@@ -32,7 +35,9 @@ SESSIONS_DIR = Path("sessions")
 class LLMClient:
     """只负责和大模型说话。这里不出现 input() / print()。"""
 
-    def __init__(self, api_key: str, base_url: str = BASE_URL, model: str = MODEL) -> None:
+    def __init__(
+        self, api_key: str, base_url: str = BASE_URL, model: str = MODEL
+    ) -> None:
         self.model = model
         self.client = OpenAI(api_key=api_key, base_url=base_url, timeout=60.0)
 
@@ -41,16 +46,18 @@ class LLMClient:
         try:
             stream = self.client.chat.completions.create(
                 model=self.model,
-                messages=messages,   # type: ignore[arg-type]
+                messages=messages,  # type: ignore[arg-type]
                 stream=True,
                 temperature=1.0,
             )
         except APIConnectionError as e:
             return f"[网络错误] 连接失败：{e}", {}
         except APIStatusError as e:
-            hint = {401: "API Key 无效或已过期", 402: "余额不足，请充值", 429: "触发限速，稍后再试"}.get(
-                e.status_code, "服务端返回错误"
-            )
+            hint = {
+                401: "API Key 无效或已过期",
+                402: "余额不足，请充值",
+                429: "触发限速，稍后再试",
+            }.get(e.status_code, "服务端返回错误")
             return f"[调用失败 {e.status_code}] {hint}：{e}", {}
         except APIError as e:
             return f"[调用失败] {e}", {}
@@ -59,7 +66,7 @@ class LLMClient:
         usage: dict[str, int] = {}
         try:
             for chunk in stream:
-                if chunk.usage:                       # 只有开 stream_options 时才有，但兼容性判断无害
+                if chunk.usage:  # 只有开 stream_options 时才有，但兼容性判断无害
                     usage = {
                         "prompt_tokens": chunk.usage.prompt_tokens,
                         "completion_tokens": chunk.usage.completion_tokens,
@@ -68,7 +75,7 @@ class LLMClient:
                 if not chunk.choices:
                     continue
                 delta = chunk.choices[0].delta.content
-                if delta:                             # 关键：content 可能是 None
+                if delta:  # 关键：content 可能是 None
                     parts.append(delta)
                     sys.stdout.write(delta)
                     sys.stdout.flush()
@@ -83,7 +90,9 @@ class Session:
 
     def __init__(self, system_prompt: str = DEFAULT_SYSTEM) -> None:
         self.system_prompt = system_prompt
-        self.messages: list[dict[str, str]] = [{"role": "system", "content": system_prompt}]
+        self.messages: list[dict[str, str]] = [
+            {"role": "system", "content": system_prompt}
+        ]
         self.total_tokens = 0
         self.turns = 0
 
@@ -106,7 +115,11 @@ class Session:
         path = sessions_dir / f"{datetime.now(tz=UTC):%Y-%m-%d-%H%M%S}.json"
         path.write_text(
             json.dumps(
-                {"system": self.system_prompt, "messages": self.messages, "total_tokens": self.total_tokens},
+                {
+                    "system": self.system_prompt,
+                    "messages": self.messages,
+                    "total_tokens": self.total_tokens,
+                },
                 ensure_ascii=False,
                 indent=2,
             ),
@@ -167,7 +180,9 @@ def main() -> None:
         session.add_assistant(reply)
         if usage:
             session.total_tokens += usage.get("total_tokens", 0)
-            print(f"[本次 {usage.get('total_tokens', 0)} tokens | 累计 {session.total_tokens}]")
+            print(
+                f"[本次 {usage.get('total_tokens', 0)} tokens | 累计 {session.total_tokens}]"
+            )
 
 
 if __name__ == "__main__":

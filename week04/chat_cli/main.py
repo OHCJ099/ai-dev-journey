@@ -9,6 +9,7 @@ SYSTEM_PROMPT = "你是一个简洁的中文助手，回答不超过两句话"
 def main() -> None:
     # ① 开场就一条 system：本次会话的角色设定，之后每一轮都连它一起发出去
     history: list[dict[str, str]] = [{"role": "system", "content": SYSTEM_PROMPT}]
+    total_tokens = 0  # 从开场到现在的累计用量（每轮 +1 次）
 
     # ② 主循环：一行 = 一轮对话
     while True:
@@ -39,6 +40,7 @@ def main() -> None:
                 json.dumps(history, ensure_ascii=False, indent=2), encoding="utf-8"
             )
             print(f"已保存到 {save_file.name}")
+            print(f"本次会话共 {total_tokens} tokens")
             continue
 
         if parts[0].startswith("/system"):
@@ -50,6 +52,7 @@ def main() -> None:
             continue
 
         if parts[0].startswith("/exit"):
+            print(f"本次会话共 {total_tokens} tokens")
             print("再见")
             break
 
@@ -61,7 +64,8 @@ def main() -> None:
         print("AI > ", end="")  # end="" 表示先别换行，等回答接在同一行
         reply, tokens = ask(history)  # 把「全部历史」发出去
         append_reply(history, reply)
-        print(f"[本轮 {tokens} tokens]")  # 不累计，只是让你看见它随轮数变大
+        total_tokens += tokens
+        print(f"[本轮 {tokens} | 累计 {total_tokens}]")
 
 
 if __name__ == "__main__":
