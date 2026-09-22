@@ -161,17 +161,17 @@
 
 ## 六、当前坐标
 
-> 更新于 2026-09-22 19:20（**W4 第 1-3 件完成，待验收**）。**这里是「实际到哪」，不是计划。**
+> 更新于 2026-09-22 19:36（**W4 功能全部交付，总指挥已实跑验收；差 README + 3 项必做 → W4 未通过**）。**这里是「实际到哪」，不是计划。**
 
-- **阶段**：**阶段② 大模型 API · W3 已通过**（2026-09-21）→ **W4 进行中**：09-22 完成 **多轮上下文 + 流式 + 四个命令**（commit `93840c4` / `6957e9b`，功能待验收）；剩 **token 累计** + **W4 收口**（连聊 10 轮不走样 / `week04/README.md` / push），见 `handbook/07`
-- **排期实测校准（2026-09-22）**：W3 全格实测 **2h55**（预算 5 天）；W4 第 1 件实测 **1h20**。**里程碑不动**，省下的时间投进 `ROADMAP` 「二·一、深度要求」；W4-W7 预计 10-05 前后收完，到 W8（10-30 项目①）的空档**明确用于项目①深度打磨**。根因：旧版 `.hermes.md` 硬规则 3「一次只给一个任务…提前做完就停」在制造少任务，已改为「按 3-4 小时配量、一次 2-3 件」
+- **阶段**：**阶段② 大模型 API · W3 已通过**（2026-09-21）→ **W4 功能全部交付、验收实跑通过，但整格未通过**（09-22 晚 总指挥实跑）：多轮上下文 + 流式 + 四命令 + token 累计全部交付（`93840c4` / `6957e9b` / `bda2523`）；`ruff check .` 全绿、`ruff format --check` 已格式化、`pyright week04` **0 errors**；**总指挥实跑 14 组破坏性输入全过** —— 空行/纯空格 ×3、`/system` 不带参、`/help`、裸 `/`、`/clearxx`、`/savexx` 全部正确兜底且**零 API 调用**；`/system <角色>` 生效（问「你是谁」→「吾乃一介书生。」）；连聊 10 轮后答对第 1 句；`/clear` 真清空（同问同句，模型答「对话刚开始」）；`/save` → `session.json` 中文与结构正确且被 `.gitignore:18` 忽略；EOF（无 `/exit`）与 `/exit` **退出码均为 0、无 Traceback**；token 逐轮递增（37→2545）。**差的最后两步**：① `week04/README.md`（收口第 6 条，未写）；② **`ROADMAP` W4 内容格里的「历史裁剪 / argparse / 日志」**（原被 07 误降级为「加练」，09-22 15:58 已改回必做）。详见 `handbook/07`
+- **排期实测校准（2026-09-22）**：W3 全格实测 **2h55**（预算 5 天）；W4 第 1 件实测 **1h20**；**W4 全格实测约 6.5h**（13:09→19:35，含 40 分钟卡在流式返回结构上 —— 那是派单缺陷、非学员问题，扣除后约 5h50）。**这两格都远快于预算，但 W1-W4 是整条路线最简单的一段（纯 Python + 单次 API 调用），10-05 校准点之前不许外推到 RAG。****里程碑不动**，省下的时间投进 `ROADMAP` 「二·一、深度要求」；W4-W7 预计 10-05 前后收完，到 W8（10-30 项目①）的空档**明确用于项目①深度打磨**。根因：旧版 `.hermes.md` 硬规则 3「一次只给一个任务…提前做完就停」在制造少任务，已改为「按 3-4 小时配量、一次 2-3 件」
 - **死线**：内部目标日 2027-02-01（距 2026-09-22 还有 **132 天 ≈ 18.9 周**）；毕业 2027-06-01。**天数只在「一、总目标」和这里各写一次，改动时必须两处同步**（2026-09-22 曾出现 136/133 两个数并存）
 - **毕设（2026-09-21 选题会已定）**：**#91「基于大语言模型与 RAG 技术的企业制度智能检索与问答系统」，导师林敏** —— 与项目②同构，**零额外工作量**，语料收窄为「企业制度文档」（只影响 W9 数据准备）；答辩/开题/中期日期待学校通知
 - **投入**：28 h/周（起步两周 25h 试运行，10/5 复盘）；里程碑见「二·二」
 - **W1 交付**：`week01/contacts.py` 单文件（`add`/`list`/`find`/`del`/`quit` + 校验 + 越界兜底 + 序号），commit `1a4ce70`→`7c9add4`（该文件已删，git 历史可查）
 - **W2 交付**：`week01/contacts/{storage,core,cli}.py` 三层 + 全部类型注解 + `pathlib`；`test_contacts.py`（9 条原生 assert）；`load_contacts` 三层结构校验（畸形 json 不崩、不覆盖原文件）；`except EOFError` 退出存盘；`ruff` 全仓通过；`contacts.json` 移出版本库；`week01/contacts/README.md` 已与代码对齐；`week02/read_env.py`（`load_dotenv` + `os.getenv`，只打印长度不打印 key）+ `week02/first_request.py`（`httpx.get` + 先判状态码再取字段）
 - **W3 交付**：`week03/hello_api.py`（中转端点 + `deepseek-flash` + 关思考模式；`try/except/else` 四类错误分类含 402/429；`usage` 三个 token 数 + 单次费用核算，算式与平台 `cost_cny` 逐位吻合）；`week02/first_request_async.py`（异步版 `httpx`）；`week01/contacts/cli.py` 改 `try/finally` 覆盖全部退出路径（Ctrl+C 实测存盘）
-- **W4 交付（进行中，09-22）**：`week04/chat_cli/{llm,main}.py` —— 多轮上下文（发全部 history + `append_reply`）、**流式**（`stream=True`、`.delta.content`、`flush=True`、收尾块 `choices` 为空须先取 `usage` 再跳过、`usage = 0` 兜底）、四个命令（`/clear` 保留 system、`/system <角色>` 用 `split(maxsplit=1)`、`/save` → `session.json`、`/exit`）、未知命令与空行兜底；`ruff` 全绿 + `pyright` 0 errors；6 条破坏性测试全过。**未完成**：token 累计、10 轮不走样、README
+- **W4 交付（09-22，功能全交付）**：`week04/chat_cli/{llm,main}.py` —— 多轮上下文（发全部 history + `append_reply`）、**流式**（`stream=True`、`.delta.content`、`flush=True`、收尾块 `choices` 为空须先取 `usage` 再跳过、`usage = 0` 兜底）、四个命令（`/clear` 保留 system、`/system <角色>` 用 `split(maxsplit=1)`、`/save` → `session.json`、`/exit`）、未知命令与空行兜底、**token 累计**（`/save` 与 `/exit` 打印「本次会话共 N tokens」）；`ruff` 全绿 + `pyright` 0 errors；`.gitignore` 加 `session.json`。**未完成**：`week04/README.md`、历史裁剪、argparse、日志
 - **W3 验收（2026-09-21 总指挥实跑）**：4 项任务全过；**学员当场吊销了泄露的旧 key**（旧 key 实测已失效）；本仓库 `git log --all` 全扫描确认 `.env` 从未进入任何提交。**未覆盖**：`temperature`（归 W5 温度实验）、流式代码与 `chat_cli v0.1`（顺延 W4）
 - **W2 验收（2026-09-20 总指挥实跑）**：5 条标准中 **4 条满足**；未满足 1 条 = 「意外退出（EOF/关窗口）不丢数据」—— `EOFError` 已修，**Ctrl+C（`KeyboardInterrupt`）与进程被 kill 仍丢数据**，已挂到 W3 第 1 件（`try/finally` 一次覆盖全部退出路径），不卡住 W2。
 - **W2 暴露的体系漏教**：`grep` 全仓确认「git 撤回 / 删文件」从未进过课程（学员 A 题诚实答「你没教过」，答得对）→ 已列入 W3 第 2 件。
