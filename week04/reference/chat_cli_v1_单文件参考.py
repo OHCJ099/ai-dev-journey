@@ -1,7 +1,15 @@
-"""chat_cli v0.1 参考实现（答案key）—— 先自己写，卡住 25 分钟以上再看对应片段。
+"""chat_cli v1 单文件参考实现（答案 key）—— 先自己写，卡住 25 分钟以上再看对应片段。
 
-本文件是「合并成单文件」的版本，方便你对照结构与逻辑；
-真正提交时按 W3 任务拆成 llm.py / session.py / main.py，体现分层。
+用途：W4「chat_cli v1」的完整答案，含多轮上下文、流式、/clear /system /save /exit、token 与花费统计。
+形态：**整个 v1 压在一个文件里**，方便你对照「数据怎么在几个部分之间传」；
+      你真正要交的是分层的 `week04/chat_cli/llm.py` + `main.py`（同目录另有这两份的答案）。
+
+⚠️ 两点注意：
+1. 本文件里有你还没学的东西（`datetime`、`from __future__ import annotations`、`sys`）——
+   **只对照逻辑，别照抄那些行**；看不懂的地方问子教练，不要自己猜。
+2. 它原先放在 `week03/reference/`，且文档里写「拆成 llm.py / session.py / main.py」——
+   那是 W3 时的一个旧设计，**实际结构是 llm.py + main.py，没有 session.py**。
+   2026-09-22 已移到 week04 并改正（原审计报告 B9 项）。
 """
 from __future__ import annotations
 
