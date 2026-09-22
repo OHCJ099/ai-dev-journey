@@ -1,6 +1,9 @@
+import json
+from pathlib import Path
+
 from llm import append_reply, ask
 
-SYSTEM_PROMPT = "你是一个简洁的中文助手，回答不超过两句话。"
+SYSTEM_PROMPT = "你是一个简洁的中文助手，回答不超过两句话"
 
 
 def main() -> None:
@@ -14,24 +17,50 @@ def main() -> None:
         except EOFError:
             return
 
-        # TODO(1) 只敲了回车（line 是空字符串）时，你该干什么？想好了再写。
-        #         提示：继续发一条空消息给 API 是在浪费 token。
         if not line:
             print("请勿输入空字符串！")
             continue
 
-        # TODO(2) 把这一行用户输入接进 history —— 用哪个 role？
-        #         写完对照 llm.py 里的 append_reply：两头的 role 不能撞。
-        history.append({"role": "user", "content": line})
+        parts = line.split(maxsplit=1)
+        if parts[0].startswith("/clear"):
+            if line != "/clear":
+                print("格式是: /clear")
+                continue
+            history = [{"role": "system", "content": SYSTEM_PROMPT}]
+            print("清除上下文")
+            continue
 
+        if parts[0].startswith("/save"):
+            if line != "/save":
+                print("格式是: /save")
+                continue
+            save_file = Path(__file__).parent / "session.json"
+            save_file.write_text(
+                json.dumps(history, ensure_ascii=False, indent=2), encoding="utf-8"
+            )
+            print(f"已保存到 {save_file.name}")
+            continue
+
+        if parts[0].startswith("/system"):
+            if len(parts) != 2:
+                print("正确的格式为: /system <提示词>")
+                continue
+            history[0]["content"] = parts[1]
+            print("提示词设置成功")
+            continue
+
+        if parts[0].startswith("/exit"):
+            print("再见")
+            break
+
+        if line.startswith("/"):
+            print("未知命令，可用：/clear /system /save /exit")
+            continue
+
+        history.append({"role": "user", "content": line})
         print("AI > ", end="")  # end="" 表示先别换行，等回答接在同一行
         reply, tokens = ask(history)  # 把「全部历史」发出去
-
-        # TODO(3) 把 reply 接进 history（调 append_reply）——
-        #         顺序想一下：应该在 ask 之前还是之后？为什么？
         append_reply(history, reply)
-
-        print(reply)
         print(f"[本轮 {tokens} tokens]")  # 不累计，只是让你看见它随轮数变大
 
 
