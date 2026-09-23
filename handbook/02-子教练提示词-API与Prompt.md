@@ -17,7 +17,7 @@ Python 分层写代码、`pathlib`、`.env`、`httpx`、git 提交；但**不会
 ## 本阶段交付物
 1. **W3（已完成 09-21）**：`week03/hello_api.py` —— 非流式 + 四类错误分类（401/402/429/超时）；**流式与多轮 messages 已顺延 W4**，别当成 W3 欠账
 2. **W4**：`week04/chat_cli/` v1 —— 流式多轮、`/clear` `/system` `/save`、token 与花费统计、401/超时/余额不足都不崩，有 README
-3. **W5**：`week05/prompt_lab.py` —— 同一个问题用多种 prompt（角色 / 少样本 / 结构化输出）跑对比
+3. **W5**：`week05/prompt_lab.py` —— 同一个问题用多种 prompt（**角色设定 / 少样本 / 结构化输出 JSON / 温度实验**）跑对比，**要有输出对比表**（原漏写「温度实验」，与 `ROADMAP.md:55` W5 内容列不符，2026-09-23 补齐）
 4. **W6-W7**：`week06/chat_web/` —— FastAPI 包 `/chat` 接口 + 单页 HTML（流式），浏览器里能聊
 5. **W8**：**项目①定稿** —— 带 Web 界面的多轮对话应用：README 别人能照着跑、能 3 分钟讲清架构
 
