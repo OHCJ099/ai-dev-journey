@@ -1,13 +1,13 @@
-chat_cli · 多轮对话命令行
+# chat_cli · 多轮对话命令行
 
 运行：`uv run python week04/chat_cli/main.py` 自定义角色：`uv run python week04/chat_cli/main.py --system "<角色描述>"`
 
 命令：
 
 - `/clear` （清空对话，保留角色）
-- `/system <提示词>` （<一句话>）
-- `/save` （<一句话>）
-- `/exit` （<一句话>）
+- `/system <提示词>` （随时设置AI的系统提示词）
+- `/save` （将挡枪history保存至同目录下的history.json）
+- `/exit` （退出并保存）
 
 功能：多轮上下文（<发多少、封顶多少>）、流式输出、token 统计、日志写 `chat.log`
 
@@ -22,5 +22,3 @@ chat_cli · 多轮对话命令行
    原因：`format` 里的 `%(xxx)s` 必须是记录对象上存在的字段名
    修法：将其修正为正确参数名asctime，逐条对齐为准
 3. 会话裁切时机：第 11 轮发出时是 22 条（21 条已有 + 1 条新 user），收到回复变成 23 条 → 裁到 21 条；所以发出时刻永远封顶 22 条，为什么不放在 `ask` 之前：那时历史是奇数条，`[-20:]` 会切掉最老的 user、留下配对的 assistant，历史变成以 assistant 开头。
-
-坑那三条用你刚才自己校准好的表述（别照抄我的原话，写成你自己能讲给面试官听的版本）。
