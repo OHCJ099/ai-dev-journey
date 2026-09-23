@@ -1,14 +1,34 @@
+import argparse
 import json
+import logging
 from pathlib import Path
 
 from llm import append_reply, ask
 
-SYSTEM_PROMPT = "你是一个简洁的中文助手，回答不超过两句话"
+logging.basicConfig(
+    filename=Path(__file__).parent / "chat.log",
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(message)s",
+    encoding="utf-8",   
+)
+logging.getLogger("httpx2").setLevel(logging.WARNING)
+
+parser = argparse.ArgumentParser("聊天命令行")
+parser.add_argument(
+    "--system",
+    default="你是一个简洁AI助手，每次回答不超过两行",
+    help="用于输入System Prompt",
+)
+
+MAX_TURNS = 10
+
+logger = logging.getLogger(__name__)
+args = parser.parse_args()
 
 
 def main() -> None:
     # ① 开场就一条 system：本次会话的角色设定，之后每一轮都连它一起发出去
-    history: list[dict[str, str]] = [{"role": "system", "content": SYSTEM_PROMPT}]
+    history: list[dict[str, str]] = [{"role": "system", "content": args.system}]
     total_tokens = 0  # 从开场到现在的累计用量（每轮 +1 次）
 
     # ② 主循环：一行 = 一轮对话
@@ -27,7 +47,7 @@ def main() -> None:
             if line != "/clear":
                 print("格式是: /clear")
                 continue
-            history = [{"role": "system", "content": SYSTEM_PROMPT}]
+            history = [{"role": "system", "content": args.system}]
             print("清除上下文")
             continue
 
@@ -53,7 +73,6 @@ def main() -> None:
 
         if parts[0].startswith("/exit"):
             print(f"本次会话共 {total_tokens} tokens")
-            print("再见")
             break
 
         if line.startswith("/"):
@@ -62,8 +81,14 @@ def main() -> None:
 
         history.append({"role": "user", "content": line})
         print("AI > ", end="")  # end="" 表示先别换行，等回答接在同一行
+
         reply, tokens = ask(history)  # 把「全部历史」发出去
+        logger.info("用户说: %s", line[:20])
         append_reply(history, reply)
+        logger.info("AI说: %s", reply[:20])
+        keep = MAX_TURNS * 2
+        if len(history) > keep + 1:
+            history = [history[0]] + history[-keep:]
         total_tokens += tokens
         print(f"[本轮 {tokens} | 累计 {total_tokens}]")
 
