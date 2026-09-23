@@ -43,3 +43,25 @@ UnboundLocalError: cannot access local variable 'usage' where it is not associat
 
 - 原因：`if __name__ == "__main__": main()` 被缩进进了 `main()` 函数体内 → 变成「只有 main 被调用时才决定要不要调用 main」，而没人调用 main，整个文件只是定义了个函数。
 - 解法：入口块必须**顶格（0 缩进）**、在函数外面。
+
+## 2026-09-23
+
+### 5. 日志字段名打错 → 程序不报错、文件却是空的（意外）
+
+```
+--- Logging error ---
+KeyError: 'asctimeds'
+ValueError: Formatting field not found in record: 'asctimeds'
+```
+
+- 原因：`format` 里的 `%(xxx)s` 必须是日志记录对象上**真实存在的字段名**（`asctime` / `levelname` / `name` / `message`）。写错时 `logging` **不崩程序** —— 它把错误打到 stderr，然后**丢掉这条日志**，于是表现为「程序正常跑完、`chat.log` 0 字节」。
+- 解法：改完先看**终端输出**、再看文件；文件空 ≠ 代码没跑。
+
+### 6. 文件名大小写（**同类错第二次**：09-18 的 `readme.md` → 今天的 `README.MD`）
+
+```
+week04/README.MD        ← 已 commit 才发现
+```
+
+- 原因：Windows 文件系统大小写不敏感，本地怎么敲都能打开，看不出问题；Linux / CI 上 `README.MD` ≠ `README.md`，按小写找文件的脚本会找不到。
+- 解法：新建文件名一律小写（全仓其他 README 都是小写）；已提交的用 `git mv 旧名 新名` 改（实测 Windows + Git Bash 可用）。
