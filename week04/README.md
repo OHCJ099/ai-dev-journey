@@ -1,15 +1,17 @@
 # chat_cli · 多轮对话命令行
 
-运行：`uv run python week04/chat_cli/main.py` 自定义角色：`uv run python week04/chat_cli/main.py --system "<角色描述>"`
+运行：`uv run python week04/chat_cli/main.py` 
+
+自定义角色：`uv run python week04/chat_cli/main.py --system "<角色描述>"`
 
 命令：
 
 - `/clear` （清空对话，保留角色）
 - `/system <提示词>` （随时设置AI的系统提示词）
-- `/save` （将挡枪history保存至同目录下的history.json）
+- `/save` （将当前history保存至同目录下的session.json）
 - `/exit` （退出并保存）
 
-功能：多轮上下文（<发多少、封顶多少>）、流式输出、token 统计、日志写 `chat.log`
+功能：多轮上下文（每轮发全部历史，封顶 1 条 system + 最近 10 轮）、流式输出、token 统计、日志写 `chat.log`
 
 技术栈：`openai` SDK 调中转端点 `tokenrhythm.studio/v1`，模型 `deepseek-flash`；key 从 `.env` 读
 
