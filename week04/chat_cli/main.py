@@ -9,11 +9,11 @@ logging.basicConfig(
     filename=Path(__file__).parent / "chat.log",
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(message)s",
-    encoding="utf-8",   
+    encoding="utf-8",
 )
 logging.getLogger("httpx2").setLevel(logging.WARNING)
 
-parser = argparse.ArgumentParser("聊天命令行")
+parser = argparse.ArgumentParser(description="聊天命令行")
 parser.add_argument(
     "--system",
     default="你是一个简洁AI助手，每次回答不超过两行",
