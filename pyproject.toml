@@ -15,6 +15,13 @@ dependencies = [
 [project.scripts]
 ai-dev-journey = "ai_dev_journey:main"
 
+# 文档目录里的 Python 代码块是「给人看的教学骨架」，故意保留对齐的 `# ① ② ③` 注释。
+# ruff 0.16 起会格式化 Markdown 内的代码块，会把对齐挤扁 —— 2026-09-25 已因此
+# 让 handbook/07 被 `ruff format .` 改掉、只好 revert，然后 `format --check .` 又不通过。
+# 排除后 `uvx ruff format --check .` 稳定全绿，文档也不再被改。
+[tool.ruff]
+extend-exclude = ["handbook", "docs", "notes"]
+
 [build-system]
 requires = ["uv_build>=0.12.9,<0.13.0"]
 build-backend = "uv_build"
