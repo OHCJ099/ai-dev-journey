@@ -109,5 +109,10 @@ for system in system_list:
     except json.JSONDecodeError:
         print(f"解析失败！文本: {text}")
     else:
-        print(data["字段A"])
+        try:
+            data["字段A"]
+        except KeyError:
+            print(f"找不到字段A: {data}")
+        else:
+            print(data["字段A"])
     print("-----------------分割线-----------------")
