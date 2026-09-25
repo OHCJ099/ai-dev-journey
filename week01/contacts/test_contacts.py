@@ -1,7 +1,7 @@
 from core import add_contact, delete_contact, find_contacts
 
 # ---- add_contact ----
-contacts = []                          # 自己造数据，绝不用真的 contacts.json
+contacts = []  # 自己造数据，绝不用真的 contacts.json
 add_contact(contacts, "甲1", "111")
 add_contact(contacts, "甲2", "111")
 add_contact(contacts, "甲3", "111")

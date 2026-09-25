@@ -14,4 +14,5 @@ async def main():
     else:
         print(f"状态码: {status_code} URL: {data['url']}")
 
+
 asyncio.run(main())

@@ -26,10 +26,13 @@ try:
     resp = client.chat.completions.create(
         model=MODEL,
         messages=[
-            {"role": "system", "content": "你是一个只会用文言文回答的助手，回答不超过 20 字"},
+            {
+                "role": "system",
+                "content": "你是一个只会用文言文回答的助手，回答不超过 20 字",
+            },
             {"role": "user", "content": question},
         ],
-        extra_body={"thinking": {"type": "disabled"}},   # 关掉思考模式，省 token
+        extra_body={"thinking": {"type": "disabled"}},  # 关掉思考模式，省 token
     )
 except AuthenticationError:
     print("key 不对，请检查 key 是否正确")
