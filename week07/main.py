@@ -76,20 +76,23 @@ async def chat(req: ChatRequest):
 async def chat_stream(req: ChatStreamRequest):
 
     def gen():
-        stream = client.chat.completions.create(
-            model=MODEL,
-            messages=req.messages,  # type: ignore[arg-type]  # 变量形式，pyright 认不出每条 role（W4 同款）
-            extra_body={"thinking": {"type": "disabled"}},
-            stream=True,
-        )
+        try:
+            stream = client.chat.completions.create(
+                model=MODEL,
+                messages=req.messages,  # type: ignore[arg-type]  # 变量形式，pyright 认不出每条 role（W4 同款）
+                extra_body={"thinking": {"type": "disabled"}},
+                stream=True,
+            )
 
-        for chunk in stream:
-            if not chunk.choices:
-                continue
-            else:
-                piece = chunk.choices[0].delta.content
-                if piece:
-                    yield f"data: {piece}\n\n"
+            for chunk in stream:
+                if not chunk.choices:
+                    continue
+                else:
+                    piece = chunk.choices[0].delta.content
+                    if piece:
+                        yield f"data: {piece}\n\n"
+        except Exception:  # noqa: BLE001 —— 流式边界：响应头已发出，任何异常都必须变成客户端可见的帧，否则前端卡死
+            yield "data: [错误] 上游异常，请重试\n\n"
         yield "data: [DONE]\n\n"
 
     return StreamingResponse(gen(), media_type="text/event-stream")
