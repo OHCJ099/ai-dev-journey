@@ -36,6 +36,10 @@ class ChatRequest(BaseModel):  # ① 继承 BaseModel
     temperature: float = Field(default=1.0, ge=0.0, le=2.0)  # ④ Field 加约束：0~2
 
 
+class ChatStreamRequest(BaseModel):
+    messages: list[dict[str, str]] = Field(min_length=1)
+
+
 @app.post("/chat")
 async def chat(req: ChatRequest):
     try:
@@ -69,15 +73,12 @@ async def chat(req: ChatRequest):
 
 
 @app.post("/chat/stream")
-async def chat_stream(req: ChatRequest):
+async def chat_stream(req: ChatStreamRequest):
 
     def gen():
         stream = client.chat.completions.create(
             model=MODEL,
-            messages=[
-                {"role": "system", "content": req.system},
-                {"role": "user", "content": req.message},
-            ],
+            messages=req.messages,  # type: ignore[arg-type]  # 变量形式，pyright 认不出每条 role（W4 同款）
             extra_body={"thinking": {"type": "disabled"}},
             stream=True,
         )

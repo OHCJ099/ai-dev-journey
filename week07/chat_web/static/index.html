@@ -1,70 +1,121 @@
 <!DOCTYPE html>
+<!-- ========== 1. 文档声明 ========== -->
 <html lang="zh">
 <head>
+  <!-- 字符编码：防止中文乱码 -->
   <meta charset="utf-8" />
+  <!-- 浏览器标签页标题 -->
   <title>week07 · 聊天页</title>
 </head>
 <body>
+  <!-- ========== 2. 页面可见结构 ========== -->
   <h3>week07 聊天页（流式）</h3>
 
+  <!-- 消息区域：所有“我”和“AI”的气泡都插入到这里 -->
   <div id="messages" style="border: 1px solid #999; padding: 8px; min-height: 200px"></div>
+
+  <!-- 输入框：用户输入消息，按回车或点按钮发送 -->
   <input id="input" type="text" placeholder="输入消息，按回车发送" style="width: 60%" />
+
+  <!-- 发送按钮 -->
   <button id="send">发送</button>
 
   <script>
+    // ========== 3. 获取页面 DOM 元素 ==========
     const messagesEl = document.getElementById("messages");
     const inputEl = document.getElementById("input");
     const sendBtn = document.getElementById("send");
 
+    // ========== 4. 对话历史 ==========
+    // 每一项格式：{ role: "user" | "assistant", content: "文本" }
+    // 每次请求把整个 history 发给后端，让模型知道上下文。
     const history = [];
 
+    // ========== 5. 添加聊天气泡 ==========
     function addBubble(text) {
-      const div = document.createElement("div");
-      div.textContent = text;
-      messagesEl.appendChild(div);
-      return div;
+      const div = document.createElement("div"); // 创建 div 作为一条消息
+      div.textContent = text;                    // 用 textContent 防止 HTML 注入
+      messagesEl.appendChild(div);               // 插入到消息区域
+      return div;                                // 返回元素，方便后续流式更新内容
     }
 
+    // ========== 6. 发送消息并接收流式回复 ==========
     async function send() {
+      // 6.1 读取输入并做空值保护
       const text = inputEl.value.trim();
       if (!text) return;
-      inputEl.value = "";
+      inputEl.value = ""; // 清空输入框
 
+      // 6.2 显示用户消息，并写入历史
       addBubble("我：" + text);
       history.push({ role: "user", content: text });
 
-      const resp = await fetch("/chat/stream", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text }),
-      });
-
-      const reader = resp.body.getReader();
-      const decoder = new TextDecoder();
-      const replyEl = addBubble("AI：");
-      let buffer = "";
+      // 6.3 AI 回复文本放到 try 外面声明
+      // 这样 catch 和后面的 history.push 都能访问，避免块级作用域错误。
       let replyText = "";
+      
+      sendBtn.disabled = true
+      try {
+        // 6.4 向后端发起 POST 请求，请求体带完整对话历史
+        const resp = await fetch("/chat/stream", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ messages: history }),
+        });
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-
-        const parts = buffer.split("\n\n");
-        buffer = parts.pop(); // 最后一段不完整，留回筐里
-        for (const part of parts) {
-          if (!part.startsWith("data: ")) continue;
-          const piece = part.slice(6);
-          if (piece === "[DONE]") continue;
-          replyText += piece;
-          replyEl.textContent = "AI：" + replyText;
+        // 6.5 如果 HTTP 状态不是 2xx，主动抛错，进入 catch
+        if (!resp.ok) {
+          throw new Error(`HTTP ${resp.status}`);
         }
-      }
 
-      history.push({ role: "assistant", content: replyText });
+        // 6.6 读取响应体流
+        const reader = resp.body.getReader(); // 拿到流读取器
+        const decoder = new TextDecoder();    // 把二进制片段解码成字符串
+        const replyEl = addBubble("AI：");    // 先创建 AI 气泡，后续不断更新
+        let buffer = "";                      // 缓存不完整的 SSE 片段
+
+        // 6.7 循环读取流
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break; // 流结束
+
+          // 把新读到的二进制片段解码，并追加到缓冲区
+          buffer += decoder.decode(value, { stream: true });
+
+          // SSE 事件通常用空行 "\n\n" 分隔
+          const parts = buffer.split("\n\n");
+          buffer = parts.pop(); // 最后一段可能不完整，留回 buffer
+
+          // 处理已经完整的事件
+          for (const part of parts) {
+            // 只处理 "data: " 开头的数据行
+            if (!part.startsWith("data: ")) continue;
+
+            const piece = part.slice(6);       // 去掉 "data: " 前缀
+            if (piece === "[DONE]") continue;  // 结束标记，跳过
+
+            replyText += piece;                      // 拼接流式片段
+            replyEl.textContent = "AI：" + replyText; // 实时刷新界面
+          }
+        }
+
+        // 6.8 流结束后，把 AI 回复写入历史，供下一轮使用
+        history.push({ role: "assistant", content: replyText });
+      } catch (err) {
+        // 6.9 网络或后端异常处理
+        // 注意：appendChild 不能直接传字符串，所以这里用 addBubble 创建节点。
+        addBubble("AI：网络断了，请检查服务器后端");
+        console.error(err);
+      } finally{
+        sendBtn.disabled = false; // ← 不管成功还是失败：解锁
+      }
     }
 
+    // ========== 7. 事件绑定 ==========
+    // 点击“发送”按钮时发送
     sendBtn.addEventListener("click", send);
+
+    // 在输入框按 Enter 时发送
     inputEl.addEventListener("keydown", (e) => {
       if (e.key === "Enter") send();
     });
