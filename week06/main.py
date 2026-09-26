@@ -51,7 +51,7 @@ async def chat(req: ChatRequest):
             messages=[
                 {"role": "system", "content": req.system},
                 {"role": "user", "content": req.message},
-            ],  # type: ignore[arg-type]  # SDK 要严格形状，我们给宽泛字典，运行时没问题
+            ],
             extra_body={"thinking": {"type": "disabled"}},
             stream=False,
         )
@@ -67,9 +67,7 @@ async def chat(req: ChatRequest):
         elif e.status_code == 429:
             raise HTTPException(status_code=503, detail="请求太频繁，请重试")
         else:
-            raise HTTPException(
-                status_code=500, detail="服务端Key余额不足, 请联系管理员"
-            )
+            raise HTTPException(status_code=500, detail="上游未知错误, 请联系管理员")
 
     reply = resp.choices[0].message.content
     if not reply:
