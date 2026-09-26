@@ -4,6 +4,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from openai import (
     APIConnectionError,
     APIStatusError,
@@ -14,6 +15,7 @@ from openai import (
 from pydantic import BaseModel, Field
 
 app = FastAPI()
+app.mount("/static", StaticFiles(directory="week07/chat_web/static"), name="static")
 
 BASE_URL = "https://api.deepseek.com/v1"
 MODEL = "deepseek-flash"

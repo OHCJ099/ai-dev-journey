@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <title>HTML 最小演示</title>
+</head>
+<body>
+  <h3>HTML 最小演示</h3>
+
+  <!-- 页面上就三样东西：一个盒子、一个输入框、一个按钮 -->
+  <div id="box">（盒子里原本写着这句话）</div>
+  <br />
+  <input id="inp" type="text" placeholder="在这里打字" />
+  <button id="btn">点我</button>
+
+  <script>
+    // ↓↓↓ 以下开始是 JS：页面的「动作」全写在这里 ↓↓↓
+
+    // 1. 按名字牌，把页面上三样东西找出来，起个短名字
+    const box = document.getElementById("box");
+    const inp = document.getElementById("inp");
+    const btn = document.getElementById("btn");
+
+    // 2. 给按钮挂一个动作：被点击时，执行大括号里那段
+    btn.addEventListener("click", () => {
+      // 3. 读输入框里的字，写进盒子
+      box.textContent = "你写了：" + inp.value;
+    });
+  </script>
+</body>
+</html>
