@@ -19,17 +19,19 @@
 
   <!-- 发送按钮 -->
   <button id="send">发送</button>
-
+  <p id="usage">累计 tokens：0</p>
   <script>
     // ========== 3. 获取页面 DOM 元素 ==========
     const messagesEl = document.getElementById("messages");
     const inputEl = document.getElementById("input");
     const sendBtn = document.getElementById("send");
+    const usageEl = document.getElementById("usage");
 
     // ========== 4. 对话历史 ==========
     // 每一项格式：{ role: "user" | "assistant", content: "文本" }
     // 每次请求把整个 history 发给后端，让模型知道上下文。
     const history = [];
+    let totalTokens = 0; // 总token
 
     // ========== 5. 添加聊天气泡 ==========
     function addBubble(text) {
@@ -92,8 +94,14 @@
             if (!part.startsWith("data: ")) continue;
 
             const piece = part.slice(6);       // 去掉 "data: " 前缀
+            if (piece.startsWith("[USAGE_TOKEN]")) {
+              totalTokens += Number(piece.slice(13));
+              usageEl.textContent = "累计 tokens：" + totalTokens
+              continue
+            }
+            
             if (piece === "[DONE]") continue;  // 结束标记，跳过
-
+            
             replyText += piece;                      // 拼接流式片段
             replyEl.textContent = "AI：" + replyText; // 实时刷新界面
           }

@@ -74,8 +74,8 @@ async def chat(req: ChatRequest):
 
 @app.post("/chat/stream")
 async def chat_stream(req: ChatStreamRequest):
-
     def gen():
+        token = None
         try:
             stream = client.chat.completions.create(
                 model=MODEL,
@@ -85,14 +85,23 @@ async def chat_stream(req: ChatStreamRequest):
             )
 
             for chunk in stream:
+                if chunk.usage is not None:
+                    token = chunk.usage.total_tokens
+                    continue
+
                 if not chunk.choices:
                     continue
                 else:
                     piece = chunk.choices[0].delta.content
                     if piece:
                         yield f"data: {piece}\n\n"
+
+
         except Exception:  # noqa: BLE001 —— 流式边界：响应头已发出，任何异常都必须变成客户端可见的帧，否则前端卡死
             yield "data: [错误] 上游异常，请重试\n\n"
-        yield "data: [DONE]\n\n"
 
+        if token is not None:
+            yield f"data: [USAGE_TOKEN]{token}\n\n"
+        yield "data: [DONE]\n\n"
+        
     return StreamingResponse(gen(), media_type="text/event-stream")
