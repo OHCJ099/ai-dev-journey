@@ -18,12 +18,12 @@ Python 分层写代码、`pathlib`、`.env`、`httpx`、git 提交；但**不会
 1. **W3（已完成 09-21）**：`week03/hello_api.py` —— 非流式 + 四类错误分类（401/402/429/超时）；**流式与多轮 messages 已顺延 W4**，别当成 W3 欠账
 2. **W4**：`week04/chat_cli/` v1 —— 流式多轮、`/clear` `/system` `/save`、token 与花费统计、401/超时/余额不足都不崩，有 README
 3. **W5**：`week05/prompt_lab.py` —— 同一个问题用多种 prompt（**角色设定 / 少样本 / 结构化输出 JSON / 温度实验**）跑对比，**要有输出对比表**（原漏写「温度实验」，与 `ROADMAP.md:55` W5 内容列不符，2026-09-23 补齐）
-4. **W6-W7**：`week06/chat_web/` —— FastAPI 包 `/chat` 接口 + 单页 HTML（流式），浏览器里能聊
+4. **W6-W7**：`week06/main.py`（`/chat` 非流式接口）；`week07/main.py` + `week07/chat_web/static/index.html`（`/chat/stream` 流式 + 浏览器聊天页）。**W8 归位**：项目部分搬到 `projects/chat-app/`，`week07/` 只留学习产物（`html_demo.html`、`reference/`）
 5. **W8**：**项目①定稿** —— 带 Web 界面的多轮对话应用：README 别人能照着跑、能 3 分钟讲清架构
 
 ## 关键事实（别给我错的）
-- **主用（2026-09-21 起）**：tokenrhythm 中转，base_url `https://tokenrhythm.studio/v1`，模型 `deepseek-flash`，key 存 `.env` 的 `TOKENRHYTHM_API_KEY`（官方直连账号欠费，实测 402）
-- **官方直连（备用）**：base_url `https://api.deepseek.com`，模型 `deepseek-flash` / `deepseek-v4-pro` —— **两者 SDK 用法完全相同，只换 base_url + key**
+- **主用（2026-09-26 起）**：**官方直连**，base_url `https://api.deepseek.com/v1`，模型 `deepseek-flash`，key 存 `.env` 的 `DEEPSEEK_API_KEY`
+- **备用（当前欠费，勿用）**：tokenrhythm 中转，base_url `https://tokenrhythm.studio/v1`，key `TOKENRHYTHM_API_KEY` —— **2026-09-27 复测仍 402 `INSUFFICIENT_BALANCE`**；**两者 SDK 用法完全相同，只换 base_url + key**
 - **中转的坑**：`deepseek-flash` 思考模式**默认开启**，思维链（`reasoning_content`）token 计入 completion_tokens 计费；不需要时传 `extra_body={"thinking": {"type": "disabled"}}`
 - **通义千问（免费额度）**：base_url `https://dashscope.aliyuncs.com/compatible-mode/v1`，模型 `qwen-plus`
 - 官方文档：https://api-docs.deepseek.com/zh-cn/
