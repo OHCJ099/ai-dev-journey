@@ -18,7 +18,7 @@
   <input id="input" type="text" placeholder="输入消息，按回车发送" style="width: 60%" />
 
   <!-- 发送按钮 -->
-  <button id="send">发送</button>
+  <button id="send">发送</button> <button id="reset">重新开始</button>
   <p id="usage">累计 tokens：0</p>
   <script>
     // ========== 3. 获取页面 DOM 元素 ==========
@@ -26,6 +26,7 @@
     const inputEl = document.getElementById("input");
     const sendBtn = document.getElementById("send");
     const usageEl = document.getElementById("usage");
+    const resetBtn = document.getElementById("reset")
 
     // ========== 4. 对话历史 ==========
     // 每一项格式：{ role: "user" | "assistant", content: "文本" }
@@ -126,6 +127,15 @@
     // 在输入框按 Enter 时发送
     inputEl.addEventListener("keydown", (e) => {
       if (e.key === "Enter") send();
+    });
+    resetBtn.addEventListener("click", () => {
+      // ① 清空消息区
+      messagesEl.innerHTML = ""
+      // ② 清空 history
+      history.length = 0
+      // ③ totalTokens 归零 + 显示刷新回 "累计 tokens：0"
+      usageEl.textContent = "累计 tokens：0"
+      totalTokens = 0
     });
   </script>
 </body>
