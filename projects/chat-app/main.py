@@ -15,12 +15,12 @@ from openai import (
 from pydantic import BaseModel, Field
 
 app = FastAPI()
-app.mount("/static", StaticFiles(directory="week07/chat_web/static"), name="static")
+app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
 
 BASE_URL = "https://api.deepseek.com/v1"
 MODEL = "deepseek-flash"
 TIMEOUT = 60.0
-ENV_FILE = Path(__file__).parent.parent / ".env"
+ENV_FILE = Path(__file__).parent.parent.parent / ".env"
 
 load_dotenv(ENV_FILE)
 key = os.getenv("DEEPSEEK_API_KEY")

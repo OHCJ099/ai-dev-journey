@@ -34,7 +34,7 @@
     // ========== 5. 添加聊天气泡 ==========
     function addBubble(text) {
       const div = document.createElement("div"); // 创建 div 作为一条消息
-      div.textContent = text;                    // 用 textContent 防止 HTML 注入
+      div.textContent = text;                    // 把文字放进 div（原样显示，不解析标签）
       messagesEl.appendChild(div);               // 插入到消息区域
       return div;                                // 返回元素，方便后续流式更新内容
     }
