@@ -65,3 +65,24 @@ week04/README.MD        ← 已 commit 才发现
 
 - 原因：Windows 文件系统大小写不敏感，本地怎么敲都能打开，看不出问题；Linux / CI 上 `README.MD` ≠ `README.md`，按小写找文件的脚本会找不到。
 - 解法：新建文件名一律小写（全仓其他 README 都是小写）；已提交的用 `git mv 旧名 新名` 改（实测 Windows + Git Bash 可用）。
+
+## 2026-09-27
+
+### 7. `try` 里的初始化 + `try` 外的读取 → 坏 key 时流被截断（**同类第 2 次**：09-22 的 `usage = 0`）
+
+```
+UnboundLocalError: cannot access local variable 'token' where it is not associated with a value
+（客户端现象：收到 [错误] 帧后连接就断，[DONE] 都收不到）
+```
+
+- 原因：`token = None` 写在 `try` 里、`yield f"...{token}..."` 写在 `except` **之后** —— `create()` 抛错时赋值从没执行，读它直接崩；崩点在 `except` 之外，接不住。
+- 解法：**读点在 `try` 之后，初始化就必须在 `try` 之前**；发帧前再判 `if token is not None:`（区分「没收到」与「收到 0」）。
+
+### 8. 相对路径不是「相对文件」，是「相对启动命令所在目录」（意外）
+
+```
+RuntimeError: Directory 'week07/chat_web/static' does not exist
+```
+
+- 原因：`StaticFiles(directory="week07/chat_web/static")` 在模块顶层执行，相对的是**启动服务时所在的目录**；换个目录启动（或部署到别处）当场崩，不是 404。
+- 解法：要锚定「文件自己在哪」就用 `Path(__file__).parent / "..."`。
