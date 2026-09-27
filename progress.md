@@ -56,7 +56,7 @@
 **背景**：学员开新对话「你是新的总教练」→ 总指挥换届，本会话接任。**交接自检结论：文件与事实一致，无需救火。**
 
 **交接自检（实跑证据）**：
-- `git status` 干净；HEAD = `origin/main` = `6ea6149`；09-26 晚总指挥两处自查修复（`e81a0bf` 07 增补第 0 件 / `6ea6149` 归位命令按真实结构修正 + `handbook/02` 端点改官方直连）**均已 push**。
+- `git status` 干净；HEAD = `origin/main` = `6ea6149`；09-27 中午总指挥两处自查修复（`e81a0bf` 07 增补第 0 件 / `6ea6149` 归位命令按真实结构修正 + `handbook/02` 端点改官方直连）**均已 push**。
 - 静态三件全绿：`ruff check .` All checks passed / `ruff format --check .` 38 files / `pyright week05 week06 week07` 0 errors。
 - `week07/main.py:18` 确认 `StaticFiles(directory="week07/chat_web/static")`（启动目录敏感）→ W8 第 1 件归位命令按真实结构可执行；`.env` 主用端点 = 官方直连（tokenrhythm 复测仍 402）。
 - 天数校准：2027-02-01 距 09-27 = **127 天 ≈ 18.1 周**（ROADMAP 原写 128，已更）。
