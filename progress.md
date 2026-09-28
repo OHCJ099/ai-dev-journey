@@ -89,7 +89,7 @@
 5. **10-05 校准点议程 +2**：① 采样 5 条真实 JD（以符合求职条件为先，不凑数）；② 评估简历 / 投递能否随成果提前。落点：`ROADMAP`、`handbook/06` 校准表。
 6. **术语与记录**：2027-02-01 统一称「内部准备目标日」；tokenrhythm 记录注明核验日期（09-29 复测仍 402；状态动态、用前复测，不写永久禁用）。落点：全仓当前面 + `handbook/02` + Hermes 记忆。
 7. **项目① 挂账 +5**（学员自己写、先讲后练）：`/chat` temperature 未透传；`/chat/stream` 加 temperature；Enter 绕过发送禁用；请求中可「重新开始」；流式 role 校验过宽。落点：`handbook/07` 加练段。
-8. **Hermes 全局与 skill 对齐**：`SOUL.md`（4 处）、`memories/USER.md`（2 处）、`memories/MEMORY.md`（3 处）、`learning-coach` skill（2 处）；`docs/面试题库` 头部加「随项目积累实测证据、W24 集中模拟补缺」。
+8. **Hermes 全局与 skill 对齐**：`SOUL.md`（4 处）、`memories/USER.md`（2 处）、`memories/MEMORY.md`（3 处）、`learning-coach` skill（6 处：2 处规则对齐 + 4 处压缩腾限 —— SKILL.md 已撞 100,000 字符硬限，压缩后 99,936）、`README.md`（2 处术语统一）；`docs/面试题库` 头部加「随项目积累实测证据、W24 集中模拟补缺」。
 
 **未做（如实记录）**：`loader.py` docstring / `README` 的「.md / .txt」表述与实现（仅 `*.md`）不一致 —— 不在本次授权范围，留待下次决定。
 
