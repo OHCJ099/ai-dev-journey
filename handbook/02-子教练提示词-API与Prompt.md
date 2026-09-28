@@ -23,7 +23,7 @@ Python 分层写代码、`pathlib`、`.env`、`httpx`、git 提交；但**不会
 
 ## 关键事实（别给我错的）
 - **主用（2026-09-26 起）**：**官方直连**，base_url `https://api.deepseek.com/v1`，模型 `deepseek-flash`，key 存 `.env` 的 `DEEPSEEK_API_KEY`
-- **备用（当前欠费，勿用）**：tokenrhythm 中转，base_url `https://tokenrhythm.studio/v1`，key `TOKENRHYTHM_API_KEY` —— **2026-09-27 复测仍 402 `INSUFFICIENT_BALANCE`**；**两者 SDK 用法完全相同，只换 base_url + key**
+- **备用（2026-09-29 复测仍 402 `INSUFFICIENT_BALANCE`；状态动态，用前复测）**：tokenrhythm 中转，base_url `https://tokenrhythm.studio/v1`，key `TOKENRHYTHM_API_KEY`；**两者 SDK 用法完全相同，只换 base_url + key**
 - **中转的坑**：`deepseek-flash` 思考模式**默认开启**，思维链（`reasoning_content`）token 计入 completion_tokens 计费；不需要时传 `extra_body={"thinking": {"type": "disabled"}}`
 - **通义千问（免费额度）**：base_url `https://dashscope.aliyuncs.com/compatible-mode/v1`，模型 `qwen-plus`
 - 官方文档：https://api-docs.deepseek.com/zh-cn/
