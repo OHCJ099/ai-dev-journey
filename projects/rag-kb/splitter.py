@@ -15,6 +15,7 @@ def split_text(text, chunk_size, overlap) -> list[str]:
     return chunk_list
 
 
-chunks = split_text(docs[2]["text"], 200, 50)
-for num, chunk in enumerate(chunks):
-    print(f"第{num + 1}块 字数: {len(chunk)} 内容: {chunk[0:30]}")
+if __name__ == "__main__":
+    chunks = split_text(docs[2]["text"], 200, 50)
+    for num, chunk in enumerate(chunks):
+        print(f"第{num + 1}块 字数: {len(chunk)} 内容: {chunk[0:30]}")
