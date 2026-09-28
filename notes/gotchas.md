@@ -86,3 +86,23 @@ RuntimeError: Directory 'week07/chat_web/static' does not exist
 
 - 原因：`StaticFiles(directory="week07/chat_web/static")` 在模块顶层执行，相对的是**启动服务时所在的目录**；换个目录启动（或部署到别处）当场崩，不是 404。
 - 解法：要锚定「文件自己在哪」就用 `Path(__file__).parent / "..."`。
+
+## 2026-09-28
+
+### 9. 脚本放错目录 → `glob` 空结果、**静默无报错**（意外）
+
+```
+（无 Traceback：清洗前后打印全是空列表，代码怎么查都"没错"）
+```
+
+- 原因：`loader.py` 被放进了 `data/` 目录里 → `DATA_DIR = Path(__file__).parent / "data"` 实际指向 `data/data`（不存在）→ `glob` 找不到文件返回空列表，**程序不报错**。
+- 解法：脚本放 `projects/rag-kb/`、语料放 `projects/rag-kb/data/`；排查「空结果」第一步先 `print(DATA_DIR)` 看程序到底在哪个目录找文件。
+
+### 10. 对字典数长度得到个位数——手里拿的是「键」不是「值」（意外）
+
+```
+（无报错：len() 打印出 4、6 这种个位数）
+```
+
+- 原因：`docs` 里装的是**字典**（`{"source": ..., "text": ...}`）。`for x in 字典` 拿到的是**键名**（`"source"`/`"text"`，长度 6 和 4）；`len(字典)` 是键的个数（2）。
+- 解法：取内容必须 `doc["text"]`；看到长度是 4/6 这种个位数，先问自己「我手里到底是字典还是值」。
