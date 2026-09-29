@@ -106,3 +106,27 @@ RuntimeError: Directory 'week07/chat_web/static' does not exist
 
 - 原因：`docs` 里装的是**字典**（`{"source": ..., "text": ...}`）。`for x in 字典` 拿到的是**键名**（`"source"`/`"text"`，长度 6 和 4）；`len(字典)` 是键的个数（2）。
 - 解法：取内容必须 `doc["text"]`；看到长度是 4/6 这种个位数，先问自己「我手里到底是字典还是值」。
+
+## 2026-09-29
+
+### 11. `except` 接住错误后，代码继续往下跑 → 用上没赋值的变量，第二次报错（**同类第 3 次**：09-22 `usage = 0`、09-27 `token = None`）
+
+```
+第一次报错（被 except 接住）: overlap 必须大于等于 0
+Traceback (most recent call last):
+  File "<string>", line 9, in <module>
+    for num, chunk in enumerate(chunks):
+NameError: name 'chunks' is not defined
+```
+
+- 原因：`chunks = split_text(...)` 写在 `try` 里，抛错时赋值从未发生；`except` 只是**接住**了那个错误，**它后面的代码照常往下跑** —— 遍历一个不存在的名字，于是第二次崩。
+- 解法：把「用 `chunks`」的代码放进 `else:`（只在 try 成功时才执行）。记一句：**except 不是终点**。
+
+### 12. 函数参数被写死 → 所有向量都成了同一句话的向量，相似度全是 1（**意外**；老毛病「把字面量写死」的新形态）
+
+```
+（无报错：不同问题、不同块的相似度全部打印 1.0）
+```
+
+- 原因：`embed(text)` 里的调用写成了 `input="怎么报销差旅费"`，**没用参数 `text`** —— 不管传什么进去都返回同一句话的向量，两个相同向量余弦 = 1。
+- 解法：函数体里出现字面量时问一句「这个值该不该来自参数」；看到「所有相似度相同 / 全是 1」先查「是不是所有输入被换成了同一段文本」。
