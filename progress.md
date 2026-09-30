@@ -369,6 +369,6 @@ $ printf 'add 李雷 111\nadd 韩梅梅 222\nlist\nfind 李\nfind 王\nfind 赵�
 1. 记录假 hash `24eb524`（日报 / progress / ROADMAP 共 3 处）→ 全部修正为 `2f6bdb8`
 2. `format --check` 1 红（`retriever.py` 长行）→ 总指挥收尾修复（diff 仅折行；输出与基准逐条一致）
 3. `.git` 悬空提交 `05528c4` / `4895ef6` = Cline 扩展自动检查点（refs/cline 有引用；origin 无残留；非学员提交、非历史改写）—— 定性完毕，不作问题
-4. 环境核查：AI 编码扩展近期安装记录（`claude-dev` 09-26 / `cline-chinese` 09-29 / `claude-code` 09-30 16:52）→ 已请学员说明用途；学习期约定重申（代码自己写、AI 当词典查、讲回是唯一验收依据）
+4. 环境核查：AI 编码扩展近期安装记录（`claude-dev` 09-26 / `cline-chinese` 09-29 / `claude-code` 09-30 16:52）→ 已在验收回复中提醒：本仓库保持工作区禁用（查 API/文档可临时开）；约定重申（代码自己写、AI 当词典查、讲回是唯一验收依据）
 
 **W11 首日实测**：学员自报 13:30 开工 → `qa.py` 17:36 完成（≈4h，含教练带修）。
