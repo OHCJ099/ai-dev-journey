@@ -31,7 +31,7 @@ def cos_sim(a, b):
     return dot / (norm_a * norm_b)
 
 
-def retrieve(question: str, chunks: list[str], k: int = 3) -> list[tuple[str, float]]:
+def retrieve(question: str, chunks: list[str], k: int = 3, min_score: float | None = None) -> list[tuple[str, float]]:
 
     question_embed = embed(question)
     embed_chunks_list = []
@@ -49,7 +49,12 @@ def retrieve(question: str, chunks: list[str], k: int = 3) -> list[tuple[str, fl
         before_sorte.append((y[0], y[1]))
 
     after_sorted = sorted(before_sorte, key=lambda w: w[1], reverse=True)
-    return after_sorted[:k]
+
+    if min_score is None:
+        return after_sorted[:k]
+    else:
+        filted = [i for i in after_sorted if i[1] >= min_score]
+        return filted[:k]
 
 
 if __name__ == "__main__":
