@@ -31,7 +31,9 @@ def cos_sim(a, b):
     return dot / (norm_a * norm_b)
 
 
-def retrieve(question: str, chunks: list[str], k: int = 3, min_score: float | None = None) -> list[tuple[str, float]]:
+def retrieve(
+    question: str, chunks: list[str], k: int = 3, min_score: float | None = None
+) -> list[tuple[str, float]]:
 
     question_embed = embed(question)
     embed_chunks_list = []
