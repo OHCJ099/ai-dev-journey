@@ -388,6 +388,6 @@ $ printf 'add 李雷 111\nadd 韩梅梅 222\nlist\nfind 李\nfind 王\nfind 赵�
 - **删除残留**：顶层空目录 `rag-kb/`（与 `projects/` 同时刻误建）、空 `week07/chat_web/`、陈旧 `.ruff_cache` ×2（`week01/contacts`、`week04`）
 - **删除 `uv init` 模板残留 `src/`**（死代码，全仓 0 引用）→ 同步 `pyproject.toml`：移除 `[project.scripts]` / `[build-system]`，加 `[tool.uv] package = false`（否则 `uv run` 报「Expected a Python module at: src\ai_dev_journey\__init__.py」）；`uv sync` / `uv run` / `loader.py` / `run_experiments.py` 复验通过；`uv.lock` 同步（editable → virtual）
 - **重写 `projects/rag-kb/README.md`**：新增「文件地图」（函数 → 文件 → 依赖图）+ VS Code 找代码方法（`F12` 跳定义 / `Ctrl+T` 全仓搜 / `Ctrl+Shift+O` 文件内函数列表）
-- **`.vscode/settings.json`**：`files.exclude` 隐藏 `__pycache__` / `.ruff_cache`（资源管理器不再显缓存目录）
+- **`.vscode/settings.json`**：`files.exclude` 隐藏 `__pycache__` / `.ruff_cache` / `.venv`（资源管理器不再显缓存与虚拟环境）
 - **未触碰**学员进行中的 `qa.py`（其 import 块 ruff 两处待修：`I001` 排序 + 行尾空格 → 收口时学员自己修）
-- commit `6a6f32e`（本条记录见下一提交）
+- **commit**：`6a6f32e`（主批：README ×2 / `.vscode` / `pyproject` / `uv.lock`）+ `ff0df81`（补删 `src/` —— **首次删除于 14:04 被还原**（磁盘文件重新出现；疑似编辑器旧缓冲回写，同类事故 09-22 发生过「旧缓冲覆盖磁盘改动」）→ 已重新删除并推送）
