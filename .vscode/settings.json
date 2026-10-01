@@ -16,6 +16,7 @@
   "editor.formatOnSave": false,
   "files.exclude": {
     "**/__pycache__": true,
-    "**/.ruff_cache": true
+    "**/.ruff_cache": true,
+    "**/.venv": true
   }
 }
