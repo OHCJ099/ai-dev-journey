@@ -380,3 +380,14 @@ $ printf 'add 李雷 111\nadd 韩梅梅 222\nlist\nfind 李\nfind 王\nfind 赵�
 - **事实**：单日净学习 ~4h+ 为有效上限；超时症状 = 吸收下降 / 卡壳烦躁 / 尾巴拒绝改错（质量崩）。
 - **影响**：① 单日节奏 → `handbook/07` 已加「每日节奏」提醒（先难后易 / 收工信号 / 跑超砍尾巴 / 卡壳早介入）；② **10-05 容量三情景**：28h/周 = 7 天 × 4h 顶格无缓冲；25h ≈ 3.5h/天 —— 本条为直接证据；周末「4-6h」的 6h 端同需重估。
 - **状态**：节奏要求延续至 10-05 出结论；正式数字由 10-05 校准定。
+
+## 环境整理 · 2026-10-01（总指挥执行，学员请求）
+
+**触发**：学员反馈「工作目录看着杂；查 import 找函数要翻一会」。
+
+- **删除残留**：顶层空目录 `rag-kb/`（与 `projects/` 同时刻误建）、空 `week07/chat_web/`、陈旧 `.ruff_cache` ×2（`week01/contacts`、`week04`）
+- **删除 `uv init` 模板残留 `src/`**（死代码，全仓 0 引用）→ 同步 `pyproject.toml`：移除 `[project.scripts]` / `[build-system]`，加 `[tool.uv] package = false`（否则 `uv run` 报「Expected a Python module at: src\ai_dev_journey\__init__.py」）；`uv sync` / `uv run` / `loader.py` / `run_experiments.py` 复验通过；`uv.lock` 同步（editable → virtual）
+- **重写 `projects/rag-kb/README.md`**：新增「文件地图」（函数 → 文件 → 依赖图）+ VS Code 找代码方法（`F12` 跳定义 / `Ctrl+T` 全仓搜 / `Ctrl+Shift+O` 文件内函数列表）
+- **`.vscode/settings.json`**：`files.exclude` 隐藏 `__pycache__` / `.ruff_cache`（资源管理器不再显缓存目录）
+- **未触碰**学员进行中的 `qa.py`（其 import 块 ruff 两处待修：`I001` 排序 + 行尾空格 → 收口时学员自己修）
+- commit `6a6f32e`（本条记录见下一提交）
