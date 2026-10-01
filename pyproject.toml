@@ -1,7 +1,7 @@
 [project]
 name = "ai-dev-journey"
 version = "0.1.0"
-description = "Add your description here"
+description = "AI 应用开发学习仓库：Python → 大模型 API → Prompt → RAG → Agent → 工程化"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
@@ -13,8 +13,11 @@ dependencies = [
     "uvicorn>=0.53.0",
 ]
 
-[project.scripts]
-ai-dev-journey = "ai_dev_journey:main"
+# 学习仓库不是要发布的 Python 包（2026-10-01 整理）：
+# 删除 uv init 模板残留 src/ 后，uv 构建报「Expected a Python module at: src\ai_dev_journey\__init__.py」，
+# 故一并移除 [project.scripts] 与 [build-system]，以 package = false 明确「不打包」。
+[tool.uv]
+package = false
 
 # 文档目录里的 Python 代码块是「给人看的教学骨架」，故意保留对齐的 `# ① ② ③` 注释。
 # ruff 0.16 起会格式化 Markdown 内的代码块，会把对齐挤扁 —— 2026-09-25 已因此
@@ -22,7 +25,3 @@ ai-dev-journey = "ai_dev_journey:main"
 # 排除后 `uvx ruff format --check .` 稳定全绿，文档也不再被改。
 [tool.ruff]
 extend-exclude = ["handbook", "docs", "notes"]
-
-[build-system]
-requires = ["uv_build>=0.12.9,<0.13.0"]
-build-backend = "uv_build"

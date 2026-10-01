@@ -13,5 +13,9 @@
   "python.analysis.typeCheckingMode": "basic",
   "python.analysis.inlayHints.variableTypes": true,
   "python.analysis.inlayHints.functionReturnTypes": true,
-  "editor.formatOnSave": false
+  "editor.formatOnSave": false,
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/.ruff_cache": true
+  }
 }

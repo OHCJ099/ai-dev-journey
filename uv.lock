@@ -9,7 +9,7 @@ resolution-markers = [
 [[package]]
 name = "ai-dev-journey"
 version = "0.1.0"
-source = { editable = "." }
+source = { virtual = "." }
 dependencies = [
     { name = "chromadb" },
     { name = "fastapi" },
