@@ -1,20 +1,23 @@
+# 知识库问答：读取制度、检索相关片段，再交给模型组织回答。
 import os
 from pathlib import Path
 
 import chromadb
 from dotenv import load_dotenv
 from loader import (
-    load_documents,  # 载入docs (data_dir: Path) -> {"source": path.name, "text": text}
+    load_documents,  # 读取并清洗文档，返回带来源和正文的列表
 )
 from openai import OpenAI
-from retriever import embed  # 向量化函数 (str) -> list[str]
-from splitter import split_text  # 切chunk (text, chunk_size, overlap) -> list[str]
+from retriever import embed  # 将文本转换成浮点数向量
+from splitter import split_text  # 将长文本切成有重叠的小块
 
+# 文档和 .env 都根据本文件位置定位，不依赖启动目录。
 DATA_DIR = Path(__file__).parent / "data"
 ENV_FILE = Path(__file__).parent.parent.parent / ".env"
 BASE_URL = "https://api.deepseek.com/v1"
 MODEL = "deepseek-flash"
 
+# 读取生成回答所需的 DeepSeek 密钥。
 load_dotenv(ENV_FILE)
 ds_key = os.getenv("DEEPSEEK_API_KEY")
 if not ds_key:
@@ -23,27 +26,31 @@ if not ds_key:
 client = OpenAI(base_url=BASE_URL, api_key=ds_key, timeout=60.0)
 
 
+# 建立索引：每块文本都保存编号、来源和向量，便于检索与引用。
 def build_index(docs):
-    # 创建chroma连接
+    # 创建内存数据库；退出进程后，这些数据不会保留。
     client = chromadb.Client()
     collection = client.create_collection(
         name="zhidu",
+        # 用余弦距离衡量向量差异，距离越小越接近。
         metadata={"hnsw:space": "cosine"},
     )
 
-    # 库的对应列表 b_ids字符串编号, b_embed对应向量, b_metadatas文件名
+    # 三个列表依次保存编号、向量和来源，顺序与文本块一致。
     b_ids = []
     b_embed = []
     b_metadatas = []
 
-    # 切片块列表
+    # 汇总所有文档的文本块。
     chunks = []
 
+    # 每块最多 500 字符，相邻块重叠 50 字符，并记录来源。
     for doc in docs:
         for chunk in split_text(doc["text"], 500, 50):
             chunks.append(chunk)
             b_metadatas.append({"source": doc["source"]})
 
+    # 按块生成唯一编号，再逐块调用向量化服务。
     for i in range(len(chunks)):
         b_ids.append(f"chunk_{i}")
 
@@ -51,16 +58,18 @@ def build_index(docs):
         b_embed.append(embed(chunk))
 
     collection.add(
-        ids=b_ids,  # ★ 54 个不重复的字符串编号（提示：循环 + f-string）
+        ids=b_ids,  # 每块的唯一编号
         metadatas=b_metadatas,  # 文件名
-        documents=chunks,  # ★ 块文本列表（就是 chunks）
-        embeddings=b_embed,  # ★ 54 个向量：循环里每个块过一遍 embed()，append 进列表
+        documents=chunks,  # 检索后提供给模型的正文
+        embeddings=b_embed,  # 与文本一一对应的语义向量
     )
 
     return collection
 
 
+# 检索前 k 个相关块，返回 (引用编号, 来源文件名, 文本)。
 def retrieve_hits(collection, question: str, k: int = 3) -> list[tuple[int, str, str]]:
+    # 使用与文档相同的向量服务，把问题转成可比较的向量。
     question_embed = embed(question)
 
     result = collection.query(
@@ -73,6 +82,7 @@ def retrieve_hits(collection, question: str, k: int = 3) -> list[tuple[int, str,
     documents = result["documents"]
     metadata = result["metadatas"]
 
+    # 第 0 组对应当前问题；zip 配对来源与正文，编号从 1 开始。
     if documents is not None and metadata is not None:
         for num, (file_info, chunk) in enumerate(
             zip(metadata[0], documents[0]), start=1
@@ -82,15 +92,18 @@ def retrieve_hits(collection, question: str, k: int = 3) -> list[tuple[int, str,
     return hits
 
 
+# 将检索结果拼成带编号的参考材料，让回答能够标注来源。
 def build_context(hits: list[tuple[int, str, str]]) -> str:
     parts = []
 
     for num, resource, chunk in hits:
         parts.append(f"[{num}] 来源：{resource}\n{chunk}")
 
+    # 片段之间留一个空行，便于模型区分不同材料。
     return "\n\n".join(parts)
 
 
+# 完整问答流程：检查输入 → 检索 → 拼材料 → 请求模型回答。
 def ask(collection, question: str, k: int = 3) -> str:
     if not question or not question.strip():
         return "问题不能为空。"
@@ -98,6 +111,7 @@ def ask(collection, question: str, k: int = 3) -> str:
     hits = retrieve_hits(collection, question, k)
     context = build_context(hits)
 
+    # system 规定回答要求，user 同时提供参考材料和问题。
     resp = client.chat.completions.create(
         model=MODEL,
         messages=[
@@ -110,12 +124,14 @@ def ask(collection, question: str, k: int = 3) -> str:
         extra_body={"thinking": {"type": "disabled"}},  # 关掉思考模式，省 token
     )
 
+    # 取第一条回答的正文；空回复时返回提示。
     reply = resp.choices[0].message.content
     if not reply:
         return "模型没有返回回答。"
     return reply
 
 
+# 直接运行时只建库一次，再演示正常问题与边界输入。
 if __name__ == "__main__":
     docs = load_documents(DATA_DIR)
     collection = build_index(docs)
@@ -134,6 +150,7 @@ if __name__ == "__main__":
             continue
         print(f"== {question} ==")
         print(ask(collection, question))
+        # 再次检索并打印来源摘要，便于核对回答引用的材料。
         result = retrieve_hits(collection, question)
         for num, file_name, context in result:
             print(f"编号:[{num}] 文件名:[{file_name}] 内容:[{context[:30]}]")

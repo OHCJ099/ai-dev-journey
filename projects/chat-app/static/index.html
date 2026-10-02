@@ -17,8 +17,9 @@
   <!-- 输入框：用户输入消息，按回车或点按钮发送 -->
   <input id="input" type="text" placeholder="输入消息，按回车发送" style="width: 60%" />
 
-  <!-- 发送按钮 -->
+  <!-- 操作按钮：发送消息，或清空当前对话 -->
   <button id="send">发送</button> <button id="reset">重新开始</button>
+  <!-- 显示后端实际返回的 tokens 用量累计值 -->
   <p id="usage">累计 tokens：0</p>
   <script>
     // ========== 3. 获取页面 DOM 元素 ==========
@@ -32,7 +33,7 @@
     // 每一项格式：{ role: "user" | "assistant", content: "文本" }
     // 每次请求把整个 history 发给后端，让模型知道上下文。
     const history = [];
-    let totalTokens = 0; // 总token
+    let totalTokens = 0; // 累计收到的 tokens 用量
 
     // ========== 5. 添加聊天气泡 ==========
     function addBubble(text) {
@@ -57,6 +58,7 @@
       // 这样 catch 和后面的 history.push 都能访问，避免块级作用域错误。
       let replyText = "";
       
+      // 请求期间禁用发送按钮，回复结束后恢复。
       sendBtn.disabled = true
       try {
         // 6.4 向后端发起 POST 请求，请求体带完整对话历史
@@ -95,6 +97,7 @@
             if (!part.startsWith("data: ")) continue;
 
             const piece = part.slice(6);       // 去掉 "data: " 前缀
+            // 用量事件只更新统计；去掉 13 个字符的标记后转为数字。
             if (piece.startsWith("[USAGE_TOKEN]")) {
               totalTokens += Number(piece.slice(13));
               usageEl.textContent = "累计 tokens：" + totalTokens
@@ -116,7 +119,7 @@
         addBubble("AI：网络断了，请检查服务器后端");
         console.error(err);
       } finally{
-        sendBtn.disabled = false; // ← 不管成功还是失败：解锁
+        sendBtn.disabled = false; // 成功或失败都会执行 finally，恢复按钮
       }
     }
 
@@ -128,6 +131,7 @@
     inputEl.addEventListener("keydown", (e) => {
       if (e.key === "Enter") send();
     });
+    // 重新开始：清空页面、对话历史和 tokens 统计。
     resetBtn.addEventListener("click", () => {
       // ① 清空消息区
       messagesEl.innerHTML = ""

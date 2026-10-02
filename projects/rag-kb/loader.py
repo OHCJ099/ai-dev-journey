@@ -1,4 +1,5 @@
 # projects/rag-kb/loader.py
+# 文档加载：读取制度文件，并清理多余空白。
 from pathlib import Path
 
 DATA_DIR = Path(__file__).parent / "data"  # 锚定，不管从哪个目录跑都对
@@ -6,29 +7,39 @@ DATA_DIR = Path(__file__).parent / "data"  # 锚定，不管从哪个目录跑�
 
 def clean_text(text: str) -> str:
     """清洗：统一换行 / 去每行首尾空白 / 连续空行压缩"""
+    # 统一 Windows 和其他系统的换行格式，便于按行处理。
     text_replace = text.replace("\r\n", "\n")
+    # 拆成多行，去掉每行两端的空格，再重新合并。
     lines = text_replace.split("\n")
     lines_strip = [line.strip() for line in lines]
     lines_join = "\n".join(lines_strip)
+    # 三个换行表示至少两个空行；反复替换，最多保留一个空行。
     while "\n\n\n" in lines_join:
         lines_join = lines_join.replace("\n\n\n", "\n\n")
+    # 清除整段文本开头和结尾的空白。
     return lines_join.strip()
 
 
+# 返回文档列表，每份文档都保留来源文件名和清洗后的正文。
 def load_documents(data_dir: Path) -> list[dict[str, str]]:
     docs = []
     """读 data_dir 下所有 .md / .txt，返回 [{"source": 文件名, "text": 清洗后全文}, ...]"""
+    # 当前实现只读取本目录的 .md 文件，并按文件名排序。
     files = sorted(data_dir.glob("*.md"))
     for path in files:
+        # 按 UTF-8 读取中文文件，再清洗正文。
         raw = path.read_text(encoding="utf-8")
         text = clean_text(raw)
+        # source 保存来源，text 保存正文，方便后续切块和检索。
         doc = {"source": path.name, "text": text}
         docs.append(doc)
     return docs
 
 
+# 直接运行本文件才执行演示；被其他文件导入时不执行。
 if __name__ == "__main__":
     data_dir = Path(__file__).parent / "data"
+    # 保留未清洗的文档，用于比较清洗前后的字符数。
     dirty_docs = []
     dirty_files = sorted(data_dir.glob("*.md"))
     for path in dirty_files:
@@ -47,13 +58,13 @@ if __name__ == "__main__":
         number = len(num["text"])
         print(f"{num['source']}: {number}字")
 
-    # 2) 脏样本测试（用 repr 打印，见卡片 7）：
+    # 用含多余空白的样本检查清洗效果。
     dirty = "  第一行  \r\n\r\n\r\n\t第二行\n\n\n\n第三行"
 
     cleaned = clean_text(dirty)
     print(cleaned)
-    #    再加两个边界：clean_text("") 和 clean_text("   ") 分别返回什么？
-    # 3) docs = load_documents(DATA_DIR)：打印共几份 + 每份 source 和字符数
+    # repr 会显示换行、制表符等不可见字符，方便对比。
+    # 同时检查空字符串和纯空格这两种边界输入。
     print("dirty repr:", repr(dirty))
     print("clean repr:", repr(clean_text(dirty)))
     print("空串:", repr(clean_text("")))
