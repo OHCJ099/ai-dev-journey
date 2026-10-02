@@ -1,6 +1,6 @@
 # rag-kb · 企业制度知识库（项目②，毕设 #91 同源）
 
-RAG 知识库问答系统。当前进度：**文档处理 ✅ W9 → 向量化与检索 ✅ W10 → 拼上下文与问答 🔄 W11（进行中）**。
+RAG 知识库问答系统。当前进度：**文档处理 ✅ W9 → 向量化与检索 ✅ W10 → 拼上下文与问答 ✅ W11 → 检索优化与评估 🔄 W12（进行中）**。
 
 ## 文件地图（找函数先看这张表）
 
@@ -11,9 +11,11 @@ RAG 知识库问答系统。当前进度：**文档处理 ✅ W9 → 向量化�
 | `run_experiments.py` | 切分对比实验（chunk_size / overlap 各三档） | `loader` `splitter` | ✅ W9 |
 | `experiments.md` | 实验记录：数字与结论都在这（W12 评估集要引用） | — | ✅ W9–W10 |
 | `embed_test.py` | 最小脚本：DashScope `text-embedding-v4` 拿一条 1024 维向量 | — | ✅ W10 |
-| `retriever.py` | `embed()` 向量化 / `cos_sim()` 余弦 / `retrieve()` 手写 top-k（含 `min_score`） | `loader` `splitter` | ✅ W10 |
+| `retriever.py` | `embed()` 向量化 / `cos_sim()` 余弦 / `retrieve()` 手写 top-k（含 `min_score`、`source_filter`；chunks 为 `{"source","text"}` 列表） | `loader` `splitter` | ✅ W10–W12 |
 | `chroma_store.py` | `build_collection()` Chroma 建库 + 查询（与手写版对照 10/10 一致） | `loader` `splitter` `retriever` | ✅ W10 |
-| `qa.py` | `build_index()` / `retrieve_hits()` / `build_context()` / `ask()`：检索 → 拼材料 → DeepSeek 回答 | `loader` `splitter` `retriever` | 🔄 W11 |
+| `qa.py` | `build_index()` / `retrieve_hits()` / `build_context()` / `ask()`：检索 → 拼材料 → DeepSeek 回答 | `loader` `splitter` `retriever` | ✅ W11 |
+| `eval_questions.md` | 评估集 20 题（开发 12 + 留出 8）+ 判定列 | — | 🔄 W12 |
+| `eval_run.py` | 读评估集 → 逐题检索 top-3 → 统计「开发集 X/Y」 | `loader` `qa` | 🔄 W12 |
 | `reference/` | 参考答案（卡住 25 分钟以上再看）：`loader_reference.py` / `splitter_reference.py` | — | — |
 | `data/` | 语料：5 份企业制度 `.md`（员工手册节选 / 考勤 / 报销 / 请假 / 安全） | — | ✅ W9 |
 
@@ -25,6 +27,7 @@ splitter.py      ← loader
 retriever.py     ← loader, splitter
 chroma_store.py  ← loader, splitter, retriever
 qa.py            ← loader, splitter, retriever
+eval_run.py      ← loader, qa
 ```
 
 > 脚本之间用「同目录直呼其名」互相 import（如 `from loader import load_documents`）—— Python 会把脚本所在目录加进模块搜索路径，所以不用写包名。
@@ -45,6 +48,7 @@ uv run python projects\rag-kb\embed_test.py       # 单条向量 1024 维
 uv run python projects\rag-kb\retriever.py        # 手写检索 top-k
 uv run python projects\rag-kb\chroma_store.py     # Chroma 检索对照
 uv run python projects\rag-kb\qa.py               # 端到端问答（W11）
+uv run python projects\rag-kb\eval_run.py         # 评估集跑分（W12）
 ```
 
-> 需要 key 的：`embed_test` / `retriever` / `chroma_store` / `qa`（`.env`：DashScope 向量化 + DeepSeek 生成）。
+> 需要 key 的：`embed_test` / `retriever` / `chroma_store` / `qa` / `eval_run`（`.env`：DashScope 向量化 + DeepSeek 生成）。
