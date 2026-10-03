@@ -8,9 +8,7 @@
 from pathlib import Path
 
 from loader import load_documents
-
-# retrieve_hits 留给下面的 TODO 使用（填完后可删掉 noqa）
-from qa import build_index, retrieve_hits  # noqa: F401
+from qa import build_index, retrieve_hits
 
 DATA_DIR = Path(__file__).parent / "data"
 EVAL_FILE = Path(__file__).parent / "eval_questions.md"
@@ -57,16 +55,34 @@ def run_eval(questions: list[dict[str, str]], collection) -> None:
         print(
             f"\n== [{q['编号']}] {q['问题']} ==  期望来源：{q['期望来源']}（{q['题型']}）"
         )
-
         # TODO（你写 · 第 1 处）：调 retrieve_hits 拿 top-3，逐条打印「来源 + 完整片段文本」。
-        #  提示：hits 每条是 (编号, 来源, 文本)；判断题要读完整文本，别只打前 30 字。
-        raise NotImplementedError("待实现")
+        hit = retrieve_hits(collection, q["问题"], k=K)
+        for h in hit:
+            #  提示：hits 每条是 (编号, 来源, 文本)；判断题要读完整文本，别只打前 30 字。
+            print(f"[{h[0]}] 来源: {h[1]}\n{h[2]}")
 
+    fen_mu = 0
+    fen_zi = 0
+    no_anwser = []
+    not_checked = []
     # TODO（你写 · 第 2 处）：统计并打印（读「判定」列）：
-    #  - 开发集召回：分母 = 题型为「有答案」或「部分可答」的题数；分子 = 判定为「命中」的题数
+    for q in questions:
+        #  - 开发集召回：分母 = 题型为「有答案」或「部分可答」的题数；分子 = 判定为「命中」的题数
+        if q["题型"] == "有答案" or q["题型"] == "部分可答":
+            fen_mu += 1
+            if q["判定"] == "命中":
+                fen_zi += 1
+            elif q["判定"] == "未命中":
+                continue
+            else:
+                not_checked.append(q["编号"])
+        if q["题型"] == "无答案":
+            no_anwser.append(q["编号"])
     #  - 输出形如：开发集召回 X/Y
     #  - 无答案题不进分母，单独列出它们的编号；没填判定的题也单独提醒
-    raise NotImplementedError("待实现")
+    print(
+        f"开发集召回：{fen_zi}/{fen_mu}\n无答案编号：{no_anwser}\n待判定编号：{not_checked}"
+    )
 
 
 def main() -> None:
