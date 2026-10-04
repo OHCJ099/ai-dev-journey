@@ -11,6 +11,7 @@ from loader import load_documents
 from multi_retrieve import merge_hits
 from qa import build_index, retrieve_hits
 from query_rewrite import rewrite_query
+from rerank import rerank
 
 DATA_DIR = Path(__file__).parent / "data"
 EVAL_FILE = Path(__file__).parent / "eval_questions.md"
@@ -35,7 +36,7 @@ def load_eval(path: Path) -> list[dict[str, str]]:
             continue
         if cells[0] == "编号" or not cells[3]:  # 表头 / 问题还没填
             continue
-        while len(cells) < 8:  # 判定列留空时行尾少一格，补上
+        while len(cells) < 9:  # 判定列留空时行尾少几格，补上
             cells.append("")
         rows.append(
             {
@@ -47,6 +48,7 @@ def load_eval(path: Path) -> list[dict[str, str]]:
                 "期望要点": cells[5],
                 "判定": cells[6],
                 "判定A": cells[7],
+                "判定B": cells[8],
             }
         )
     return rows
@@ -58,8 +60,7 @@ def run_eval(questions: list[dict[str, str]], collection) -> None:
         print(
             f"\n== [{q['编号']}] {q['问题']} ==  期望来源：{q['期望来源']}（{q['题型']}）"
         )
-        # TODO（你写 · 第 1 处）：调 retrieve_hits 拿 top-3，逐条打印「来源 + 完整片段文本」。
-        hit = retrieve_hits_multi(collection, q["问题"], k=K)
+        hit = rerank(collection, q["问题"], k=K)
         for h in hit:
             #  提示：hits 每条是 (编号, 来源, 文本)；判断题要读完整文本，别只打前 30 字。
             print(f"[{h[0]}] 来源: {h[1]}\n{h[2]}")
@@ -67,6 +68,7 @@ def run_eval(questions: list[dict[str, str]], collection) -> None:
     fen_mu = 0
     fen_zi = 0
     fen_zi_a = 0
+    fen_zi_b = 0
     no_anwser = []
     not_checked = []
     # 统计并打印（基线读「判定」列、优化A 读「判定A」列）：
@@ -82,6 +84,8 @@ def run_eval(questions: list[dict[str, str]], collection) -> None:
                 not_checked.append(q["编号"])
             if q["判定A"] == "命中":
                 fen_zi_a += 1
+            if q["判定B"] == "命中":
+                fen_zi_b += 1
         if q["题型"] == "无答案":
             no_anwser.append(q["编号"])
     #  - 输出形如：开发集召回 X/Y
@@ -89,6 +93,7 @@ def run_eval(questions: list[dict[str, str]], collection) -> None:
     print(
         f"开发集召回（基线）：{fen_zi}/{fen_mu}\n"
         f"开发集召回（优化A）：{fen_zi_a}/{fen_mu}\n"
+        f"开发集召回（优化B）：{fen_zi_b}/{fen_mu}\n"
         f"无答案编号：{no_anwser}\n待判定编号：{not_checked}"
     )
 
