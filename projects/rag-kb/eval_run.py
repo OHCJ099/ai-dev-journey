@@ -8,7 +8,9 @@
 from pathlib import Path
 
 from loader import load_documents
+from multi_retrieve import merge_hits
 from qa import build_index, retrieve_hits
+from query_rewrite import rewrite_query
 
 DATA_DIR = Path(__file__).parent / "data"
 EVAL_FILE = Path(__file__).parent / "eval_questions.md"
@@ -33,7 +35,7 @@ def load_eval(path: Path) -> list[dict[str, str]]:
             continue
         if cells[0] == "编号" or not cells[3]:  # 表头 / 问题还没填
             continue
-        while len(cells) < 7:  # 判定列留空时行尾少一格，补上
+        while len(cells) < 8:  # 判定列留空时行尾少一格，补上
             cells.append("")
         rows.append(
             {
@@ -44,6 +46,7 @@ def load_eval(path: Path) -> list[dict[str, str]]:
                 "期望来源": cells[4],
                 "期望要点": cells[5],
                 "判定": cells[6],
+                "判定A": cells[7],
             }
         )
     return rows
@@ -56,16 +59,17 @@ def run_eval(questions: list[dict[str, str]], collection) -> None:
             f"\n== [{q['编号']}] {q['问题']} ==  期望来源：{q['期望来源']}（{q['题型']}）"
         )
         # TODO（你写 · 第 1 处）：调 retrieve_hits 拿 top-3，逐条打印「来源 + 完整片段文本」。
-        hit = retrieve_hits(collection, q["问题"], k=K)
+        hit = retrieve_hits_multi(collection, q["问题"], k=K)
         for h in hit:
             #  提示：hits 每条是 (编号, 来源, 文本)；判断题要读完整文本，别只打前 30 字。
             print(f"[{h[0]}] 来源: {h[1]}\n{h[2]}")
 
     fen_mu = 0
     fen_zi = 0
+    fen_zi_a = 0
     no_anwser = []
     not_checked = []
-    # TODO（你写 · 第 2 处）：统计并打印（读「判定」列）：
+    # 统计并打印（基线读「判定」列、优化A 读「判定A」列）：
     for q in questions:
         #  - 开发集召回：分母 = 题型为「有答案」或「部分可答」的题数；分子 = 判定为「命中」的题数
         if q["题型"] == "有答案" or q["题型"] == "部分可答":
@@ -73,31 +77,45 @@ def run_eval(questions: list[dict[str, str]], collection) -> None:
             if q["判定"] == "命中":
                 fen_zi += 1
             elif q["判定"] == "未命中":
-                continue
+                pass
             else:
                 not_checked.append(q["编号"])
+            if q["判定A"] == "命中":
+                fen_zi_a += 1
         if q["题型"] == "无答案":
             no_anwser.append(q["编号"])
     #  - 输出形如：开发集召回 X/Y
     #  - 无答案题不进分母，单独列出它们的编号；没填判定的题也单独提醒
     print(
-        f"开发集召回：{fen_zi}/{fen_mu}\n无答案编号：{no_anwser}\n待判定编号：{not_checked}"
+        f"开发集召回（基线）：{fen_zi}/{fen_mu}\n"
+        f"开发集召回（优化A）：{fen_zi_a}/{fen_mu}\n"
+        f"无答案编号：{no_anwser}\n待判定编号：{not_checked}"
     )
 
 
+def retrieve_hits_multi(
+    collection, question: str, k: int = 3
+) -> list[tuple[int, str, str]]:
+    """多路检索（优化 A）：原问题 + 改写变体各自检索，合并后返回。"""
+    # TODO（你写 · 3 步）：
+    hit_groups = []
+    # ① 变体 —— 调 rewrite_query(question)；注意它失败时返回什么
+    questions = rewrite_query(question)
+    questions.append(question)
+    # ② 每路检索 —— 对每一路调 retrieve_hits(collection, 路, k=k)，
+    for q in questions:
+        hit_groups.append(retrieve_hits(collection, q, k=K))
+    #   收集成 hit_groups（列表的列表：[路1的hits, 路2的hits, ...]）
+    # ③ 合并 —— 调 merge_hits；k 传什么想清楚（要的是"最终几条"）
+    f_hit = merge_hits(hit_groups, k=K)
+    return f_hit
+
+
 def main() -> None:
-    questions = load_eval(EVAL_FILE)
-    print(f"评估集共 {len(questions)} 题（本次跑：{'/'.join(RUN_SETS)}集）")
-    if not questions:
-        print("评估集还是空的：先把 eval_questions.md 里 20 题填上。")
-        return
-
-    questions = [q for q in questions if q["集"] in RUN_SETS]
-
     docs = load_documents(DATA_DIR)
-    print("正在建索引（每个块一次 embedding 调用，约 1 分钟）……")
     collection = build_index(docs)
-
+    questions = load_eval(EVAL_FILE)
+    questions = [q for q in questions if q["集"] in RUN_SETS]
     run_eval(questions, collection)
 
 
