@@ -1,0 +1,28 @@
+PASS 空串 -> []
+PASS 纯空白 -> []
+PASS chunk_size=0 -> ValueError
+PASS chunk_size=-1 -> ValueError
+PASS split_text(0,0) -> ValueError
+PASS split_text(5,5) -> ValueError
+PASS split_text(5,-1) -> ValueError
+PASS 无标点硬切：每块<=60 | 15 块
+PASS 无标点硬切：无丢字
+PASS cs=1：逐字切
+PASS 多空行：1 块含两段
+PASS 首尾空行 -> 1 块
+PASS 段落恰好=上限
+PASS cs=300 员工手册-节选.md 上限/空块/无丢字 | over=0 blank=0 keep=True n=18
+PASS cs=300 安全规范.md 上限/空块/无丢字 | over=0 blank=0 keep=True n=25
+PASS cs=300 报销制度.md 上限/空块/无丢字 | over=0 blank=0 keep=True n=20
+PASS cs=300 考勤制度.md 上限/空块/无丢字 | over=0 blank=0 keep=True n=13
+PASS cs=300 请假制度.md 上限/空块/无丢字 | over=0 blank=0 keep=True n=25
+PASS cs=300 坏接缝（信息项） | bad=2
+PASS cs=500 员工手册-节选.md 上限/空块/无丢字 | over=0 blank=0 keep=True n=11
+PASS cs=500 安全规范.md 上限/空块/无丢字 | over=0 blank=0 keep=True n=14
+PASS cs=500 报销制度.md 上限/空块/无丢字 | over=0 blank=0 keep=True n=11
+PASS cs=500 考勤制度.md 上限/空块/无丢字 | over=0 blank=0 keep=True n=7
+PASS cs=500 请假制度.md 上限/空块/无丢字 | over=0 blank=0 keep=True n=15
+PASS cs=500 坏接缝=0（对拍口径） | bad=0
+PASS 超大 cs：不炸 | 1 块
+========================================
+total=26 pass=26 fail=0
