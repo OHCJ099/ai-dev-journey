@@ -43,7 +43,7 @@ def split_by_boundary(text: str, chunk_size: int) -> list[str]:
                 chunks.append(chunk)
                 chunk = ""
 
-            sentences = re.findall(r"[^。！？]+[。！？]?", paragraph)
+            sentences = re.findall(r"[。！？]+|[^。！？]+[。！？]*", paragraph)
             for sentence in sentences:
                 if len(sentence) > chunk_size:
                     # 先保存已有 chunk，再硬切这句
