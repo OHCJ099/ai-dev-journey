@@ -2,6 +2,8 @@
 # 文档加载：读取制度文件，并清理多余空白。
 from pathlib import Path
 
+from pypdf import PdfReader
+
 DATA_DIR = Path(__file__).parent / "data"  # 锚定，不管从哪个目录跑都对
 
 
@@ -34,6 +36,37 @@ def load_documents(data_dir: Path) -> list[dict[str, str]]:
         doc = {"source": path.name, "text": text}
         docs.append(doc)
     return docs
+
+
+def load_document(path: str | Path) -> dict[str, str]:
+    """读单个文件（.md / .pdf），返回 {"source": 文件名, "text": 清洗后正文}。"""
+    path = Path(path)
+    str_path = str(path)
+
+    if not path.exists():
+        raise FileNotFoundError(f"文件不存在: {path}")
+
+    if str_path[-3:] == ".md":
+        raw = path.read_text(encoding="utf-8")
+        text = clean_text(raw)
+        if not text:
+            raise ValueError(f"空白文件: {path}")
+        doc = {"source": path.name, "text": text}
+        return doc
+
+    if str_path[-4:] == ".pdf":
+        reader = PdfReader(path)
+        text = ""
+        for page in reader.pages:
+            text += page.extract_text()
+        if not text:
+            raise ValueError(f"空白文件: {path}")
+        text = clean_text(text)
+        doc = {"source": path.name, "text": text}
+        return doc
+
+    else:
+        raise ValueError("非pdf或md文件")
 
 
 # 直接运行本文件才执行演示；被其他文件导入时不执行。
@@ -69,3 +102,21 @@ if __name__ == "__main__":
     print("clean repr:", repr(clean_text(dirty)))
     print("空串:", repr(clean_text("")))
     print("纯空格:", repr(clean_text("   ")))
+
+    # —— 今日新增：load_document 六个测试用例（samples/ 目录）——
+    print("\n=== load_document 测试 ===")
+    sample_dir = Path(__file__).parent / "samples"
+    test_list = [
+        "小样本.md",
+        "报销制度.pdf",
+        "空白页.pdf",
+        "空文件.md",
+        "空md文件.md",
+        "未知格式.txt",
+    ]
+    for file in test_list:
+        try:
+            path = sample_dir / file
+            print(load_document(path))
+        except ValueError as v:
+            print(v)
