@@ -41,12 +41,12 @@ def load_documents(data_dir: Path) -> list[dict[str, str]]:
 def load_document(path: str | Path) -> dict[str, str]:
     """读单个文件（.md / .pdf），返回 {"source": 文件名, "text": 清洗后正文}。"""
     path = Path(path)
-    str_path = str(path)
+    suffix = path.suffix.lower()
 
     if not path.exists():
         raise FileNotFoundError(f"文件不存在: {path}")
 
-    if str_path[-3:] == ".md":
+    if suffix[-3:] == ".md":
         raw = path.read_text(encoding="utf-8")
         text = clean_text(raw)
         if not text:
@@ -54,7 +54,7 @@ def load_document(path: str | Path) -> dict[str, str]:
         doc = {"source": path.name, "text": text}
         return doc
 
-    if str_path[-4:] == ".pdf":
+    if suffix[-4:] == ".pdf":
         reader = PdfReader(path)
         text = ""
         for page in reader.pages:

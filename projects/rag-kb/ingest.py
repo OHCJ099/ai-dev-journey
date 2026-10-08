@@ -15,6 +15,8 @@ def ingest_file(path: str | Path, index_path: str | Path) -> int:
     file = load_document(path)
     # ② 切块
     chunks = split_text(file["text"], CHUNK_SIZE, OVERLAP)
+    if len(chunks) == 0:
+        raise ValueError(f"文件{file['source']}: chunks块为0")
     # ③ 逐块向量化（远程付费调用 —— 先报量）
     embeddings = []
     for chunk in chunks:
