@@ -50,3 +50,8 @@ def add_chunks(
         )
 
     return len(chunks)
+
+
+def delete_source(collection, source: str) -> int:
+    result = collection.delete(where={"source": source})
+    return result["deleted"]
