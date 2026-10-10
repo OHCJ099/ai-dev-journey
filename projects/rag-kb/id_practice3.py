@@ -11,9 +11,11 @@ def count_by_source(chunks: list[tuple[str, str]]) -> dict[str, int]:
         counts[source] = counts.get(source, 0) + 1
     return counts
 
+
 def source_names(chunks: list[tuple[str, str]]) -> list[str]:
-    i = list({s for s,_ in chunks})
+    i = list({s for s, _ in chunks})
     return sorted(i)
+
 
 if __name__ == "__main__":
     data = [
