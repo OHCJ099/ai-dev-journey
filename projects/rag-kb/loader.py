@@ -46,7 +46,7 @@ def load_document(path: str | Path) -> dict[str, str]:
     if not path.exists():
         raise FileNotFoundError(f"文件不存在: {path}")
 
-    if suffix[-3:] == ".md":
+    if suffix == ".md":
         raw = path.read_text(encoding="utf-8")
         text = clean_text(raw)
         if not text:
@@ -54,7 +54,7 @@ def load_document(path: str | Path) -> dict[str, str]:
         doc = {"source": path.name, "text": text}
         return doc
 
-    if suffix[-4:] == ".pdf":
+    if suffix == ".pdf":
         reader = PdfReader(path)
         text = ""
         for page in reader.pages:

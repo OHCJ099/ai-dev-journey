@@ -4,13 +4,16 @@
 
 def count_by_source(chunks: list[tuple[str, str]]) -> dict[str, int]:
     # ① 容器放哪？想清楚再写这一行
-    count_list = {}
+    counts = {}
     # ② 遍历 chunks，每个元组解包成 (source, _text)
     for source, _chunk in chunks:
         # ③ 这个来源的计数 +1（提示：counts.get(source, 0) + 1）
-        count_list[source] = count_list.get(source, 0) + 1
-    return count_list
+        counts[source] = counts.get(source, 0) + 1
+    return counts
 
+def source_names(chunks: list[tuple[str, str]]) -> list[str]:
+    i = list({s for s,_ in chunks})
+    return sorted(i)
 
 if __name__ == "__main__":
     data = [
@@ -20,7 +23,7 @@ if __name__ == "__main__":
         ("B.md", "b2"),
         ("A.md", "a3"),
     ]
-    print("第 1 次:", count_by_source(data))
-    print("第 2 次:", count_by_source(data))
-    print("两次相同:", count_by_source(data) == count_by_source(data))
-    print("空列表:", count_by_source([]))
+    print("第 1 次:", source_names(data))
+    print("第 2 次:", source_names(data))
+    print("两次相同:", source_names(data) == source_names(data))
+    print("空列表:", source_names([]))
