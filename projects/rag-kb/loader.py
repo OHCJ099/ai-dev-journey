@@ -24,8 +24,8 @@ def clean_text(text: str) -> str:
 
 # 返回文档列表，每份文档都保留来源文件名和清洗后的正文。
 def load_documents(data_dir: Path) -> list[dict[str, str]]:
+    """读 data_dir 下所有 .md，返回 [{"source": 文件名, "text": 清洗后全文}, ...]。"""
     docs = []
-    """读 data_dir 下所有 .md / .txt，返回 [{"source": 文件名, "text": 清洗后全文}, ...]"""
     # 当前实现只读取本目录的 .md 文件，并按文件名排序。
     files = sorted(data_dir.glob("*.md"))
     for path in files:

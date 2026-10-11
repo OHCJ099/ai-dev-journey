@@ -9,8 +9,8 @@ INDEX_DIR_NAME = "chroma_index"
 COLLECTION_NAME = "zhidu_kb"
 
 
-def open_index(path: str | Path):
-    client = chromadb.PersistentClient(path=Path(path) / INDEX_DIR_NAME)
+def open_index(index_path: str | Path):
+    client = chromadb.PersistentClient(path=Path(index_path) / INDEX_DIR_NAME)
     collection = client.get_or_create_collection(name=COLLECTION_NAME)
     return collection
 

@@ -54,6 +54,7 @@ else:
     print(resp.choices[0].message.content)
     print()
     u = resp.usage
-    print(f"prompt_tokens:     {u.prompt_tokens}")
-    print(f"completion_tokens: {u.completion_tokens}")
-    print(f"total_tokens:      {u.total_tokens}")
+    if u is not None:
+        print(f"prompt_tokens:     {u.prompt_tokens}")
+        print(f"completion_tokens: {u.completion_tokens}")
+        print(f"total_tokens:      {u.total_tokens}")

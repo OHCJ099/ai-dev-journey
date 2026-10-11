@@ -1,0 +1,13 @@
+上传后限定检索：差旅报销制度.md=3条，信息安全制度.md=1条
+覆盖更新：报销3块变1块，旧尾块消失，正文匹配修订版
+删除后限定检索：差旅报销制度.md=0条，信息安全制度.md=1条
+保留来源：ID和正文不变
+空文件.md：ValueError；count 1 -> 1；ID/正文/来源不变；未进入向量计算
+错误原文：空白文件: D:\dev\ai-dev-journey\projects\rag-kb\samples\空文件.md
+未知格式.txt：ValueError；count 1 -> 1；ID/正文/来源不变；未进入向量计算
+错误原文：非pdf或md文件
+独立进程只读重开：报销0条，信息安全1条，总count=1
+删除未复活，保留正文匹配样张；未清库、未重新入库
+All checks passed!
+1 file already formatted
+0 errors, 0 warnings, 0 informations

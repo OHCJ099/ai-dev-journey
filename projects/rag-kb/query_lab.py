@@ -2,7 +2,7 @@ from index_store import open_index
 from retriever import embed
 
 
-def query_index(collection, question, k=3, source=None):
+def query_index(collection, question, k=3, source=None) -> list[tuple[str, str]]:
     if not question or not str(question).strip():
         raise ValueError(f"问题[{question!r}]为空")
 
