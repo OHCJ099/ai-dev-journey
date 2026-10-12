@@ -3,8 +3,29 @@
 运行 uvicorn api_lab:app；正式 api.py 不负责设置假向量。
 """
 
+from types import SimpleNamespace
+
 import api
+import qa
 from demo_w13 import enable_offline
 
+
+def fake_create(**kwargs):
+    """明确标记的聊天替身：只核对请求接线，不生成真实答案。"""
+    messages = kwargs["messages"]
+    assert len(messages) == 2
+    assert messages[0]["role"] == "system"
+    assert messages[1]["role"] == "user"
+    assert "参考材料：" in messages[1]["content"]
+    assert "问题：" in messages[1]["content"]
+    message = SimpleNamespace(
+        content="【离线测试占位，非模型答案】回答生成接线已执行。"
+    )
+    return SimpleNamespace(choices=[SimpleNamespace(message=message)])
+
+
 enable_offline()
+qa.client = SimpleNamespace(
+    chat=SimpleNamespace(completions=SimpleNamespace(create=fake_create))
+)
 app = api.app

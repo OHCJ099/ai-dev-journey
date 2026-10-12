@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>企业制度知识库</title>
+</head>
+<body>
+    <h1>企业制度知识库</h1>
+    <input id="fileInput" type="file" accept=".md,.pdf">
+    <button id="uploadButton">上传文档</button>
+    <p id="uploadStatus">尚未上传</p>
+
+    <h2>提问</h2>
+    <input id="questionInput" type="text" placeholder="输入制度问题">
+    <button id="queryButton">提问</button>
+    <pre id="answerBox">尚未提问</pre>
+    <h2>引用片段</h2>
+    <pre id="sourcesBox" style="white-space: pre-wrap;"></pre>
+
+    <script>
+        const fileInput = document.getElementById("fileInput");
+        const uploadButton = document.getElementById("uploadButton");
+        const uploadStatus = document.getElementById("uploadStatus");
+
+        uploadButton.addEventListener("click", upload);
+
+        const questionInput = document.getElementById("questionInput");
+        const queryButton = document.getElementById("queryButton");
+        const answerBox = document.getElementById("answerBox");
+        const sourcesBox = document.getElementById("sourcesBox");
+
+        queryButton.addEventListener("click", query);
+
+
+
+        function showSources(sources) {
+            if (sources.length === 0) {
+                sourcesBox.textContent = "没有引用片段";
+                return;
+            }
+
+            sourcesBox.textContent = "";
+            for (let i = 0; i < sources.length; i++) {
+                const source = sources[i][0];
+                const text = sources[i][1];
+                sourcesBox.textContent += "[" + (i + 1) + "] 来源：" + source + "\n" + text + "\n\n";
+            }
+        }
+
+        async function query() {
+            sourcesBox.textContent = "";
+            const question = questionInput.value.trim();
+            if (!question) {
+                answerBox.textContent = "请输入问题";
+                return;
+            }
+            queryButton.disabled = true;
+            answerBox.textContent = "正在查询…";
+            try {
+                const resp = await fetch("/query", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({question: question, k: 3})
+                });
+                const data = await resp.json();
+                if (!resp.ok) {
+                    answerBox.textContent = "查询失败：" + data.detail;
+                    return;
+                }
+                answerBox.textContent = data.answer;
+                showSources(data.sources);
+            } catch (error) {
+                answerBox.textContent = "连接或响应异常，请检查后端服务";
+            } finally {
+                queryButton.disabled = false;
+            }
+        }
+
+        async function upload() {
+            const file = fileInput.files[0];
+            if (!file) {
+                uploadStatus.textContent = "请先选择文件";
+                return;
+            }
+            const fd = new FormData();
+            fd.append("file", file);
+
+            uploadButton.disabled = true;
+            uploadStatus.textContent = "正在上传…";
+            try {
+                const resp = await fetch("/upload", {method: "POST", body: fd});
+                const data = await resp.json();
+                if (!resp.ok) {
+                    uploadStatus.textContent = "上传失败：" + data.detail;
+                    return;
+                }
+                uploadStatus.textContent = "已入库：" + data.source + "，块数：" + data.blocks;
+            } catch (error) {
+                uploadStatus.textContent = "连接或响应异常，请检查后端服务";
+            } finally {
+                uploadButton.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
