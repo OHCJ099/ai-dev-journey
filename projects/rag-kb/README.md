@@ -52,3 +52,26 @@ uv run python projects\rag-kb\eval_run.py         # 评估集跑分（W12）
 ```
 
 > 需要 key 的：`embed_test` / `retriever` / `chroma_store` / `qa` / `eval_run`（`.env`：DashScope 向量化 + DeepSeek 生成）。
+
+## 网页版（W14）
+
+浏览器里上传制度、提问、看引用来源、管理来源列表。
+
+```powershell
+uv sync                                                                 # 装依赖
+uv run uvicorn api_lab:app --port 8765 --app-dir projects\rag-kb       # 起服务（离线假向量）
+```
+
+然后浏览器打开 **http://127.0.0.1:8765/**。
+
+- `api_lab:app` 用**离线假向量 + 假模型回复**，只验证页面接线，**不花钱、也不证明检索质量**。
+- 要用真实模型：把 `.env` 的 key 配好，起 `uv run uvicorn api:app --port 8765 --app-dir projects\rag-kb`（**真实 embedding 与生成都是付费调用**）。
+- **不能用 VS Code Live Server 打开页面** —— 页面要调 `/sources`、`/query` 这些后端接口，必须从 uvicorn 的地址进（同源）。
+
+| 接口 | 作用 |
+|---|---|
+| `POST /upload` | 上传 `.md` / `.pdf`，入库 |
+| `POST /query` | 提问，返回答案 + 引用片段 |
+| `GET /sources` | 列出库内来源与块数 |
+| `DELETE /source/{name}` | 删除某个来源 |
+

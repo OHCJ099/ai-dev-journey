@@ -1,7 +1,10 @@
+import io
 from pathlib import Path
 
 import index_store
 import ingest
+import loader
+import pypdf.errors
 import qa
 import query_lab
 from api_models import QueryRequest
@@ -13,11 +16,13 @@ from openai import (
     APITimeoutError,
     AuthenticationError,
 )
+from pypdf import PdfReader
 
 app = FastAPI()
 
 UPLOAD_PATH = Path("D:/Hermes/cache/scratch/w14/uploads")
 INDEX_PATH = Path("D:/Hermes/cache/scratch/w14/index_offline")
+TEMP_PATH = Path("D:/Hermes/cache/scratch/w14/Temps")
 
 
 # 接收上传文件，保存后调用已有入库函数。
@@ -26,13 +31,33 @@ async def upload(file: UploadFile = File(...)):  # noqa: B008 -- FastAPI 上传�
     content = await file.read()
     if file.filename is None or file.filename.strip() == "":
         raise HTTPException(status_code=400, detail="文件名不能为空")
-
     file_path = UPLOAD_PATH / Path(file.filename).name
+
+    suffix = file_path.suffix.lower()
+    if suffix == ".md":
+        try:
+            text = content.decode("utf-8")
+        except UnicodeDecodeError as e:
+            raise HTTPException(status_code=400, detail=f"文件编码无法识别：{e}")
+    elif suffix == ".pdf":
+        try:
+            reader = PdfReader(io.BytesIO(content))
+            text = "\n".join(page.extract_text() or "" for page in reader.pages)
+        except pypdf.errors.PyPdfError as e:
+            raise HTTPException(status_code=400, detail=f"文件无法解析[{e}]")
+    else:
+        raise HTTPException(status_code=400, detail="只支持.md .pdf")
+
+    cleaned = loader.clean_text(text)
+    if len(cleaned) == 0:
+        raise HTTPException(status_code=400, detail="文件不能为空")
+
     UPLOAD_PATH.mkdir(parents=True, exist_ok=True)
+
     file_path.write_bytes(content)
 
     try:
-        count = ingest.ingest_file(file_path, INDEX_PATH)
+        count = ingest.ingest_file(file_path, INDEX_PATH, True)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 

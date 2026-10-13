@@ -1,106 +1,135 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh">
 <head>
-    <meta charset="UTF-8">
-    <title>企业制度知识库</title>
+  <meta charset="utf-8" />
+  <title>企业制度知识库</title>
+  <style>
+    /* 区域底色 */
+    #uploadArea { background: #d6eaff; padding: 12px; border-radius: 6px; margin-bottom: 12px; }
+    #queryArea  { background: #d9f7d9; padding: 12px; border-radius: 6px; margin-bottom: 12px; }
+    #sourceArea { background: #ffe8cc; padding: 12px; border-radius: 6px; }
+
+    #uploadButton { background: #4a90e2; color: #fff; }
+    #queryButton  { background: #3cb371; color: #fff; }
+    .deleteButton { background: #e25c5c; color: #fff; margin-left: 8px; }
+
+    /* 空元素显示灰色占位提示 */
+    #uploadStatus:empty::before { content: "（上传状态显示在这里）"; color: #999; }
+    #answerBox:empty::before    { content: "（模型回答显示在这里）"; color: #999; }
+    #sourcesBox:empty::before   { content: "（引用片段显示在这里）"; color: #999; }
+    #listBox:empty::before      { content: "（来源列表显示在这里）"; color: #999; }
+
+    /* 给这些区域加个最小高度，空的时候也占位置，看得见 */
+    #uploadStatus, #answerBox, #sourcesBox, #listBox {
+      min-height: 1.2em;
+      background: #ffffffaa;
+      padding: 6px;
+    }
+  </style>
 </head>
 <body>
-    <h1>企业制度知识库</h1>
-    <input id="fileInput" type="file" accept=".md,.pdf">
-    <button id="uploadButton">上传文档</button>
-    <p id="uploadStatus">尚未上传</p>
+  <h3>企业制度知识库</h3>
 
-    <h2>提问</h2>
-    <input id="questionInput" type="text" placeholder="输入制度问题">
+  <!-- 上传区：蓝色 -->
+  <div id="uploadArea">
+    <input id="fileInput" type="file" accept=".md,.pdf" />
+    <button id="uploadButton">上传</button>
+    <p id="uploadStatus"></p>
+  </div>
+
+  <!-- 提问区：绿色 -->
+  <div id="queryArea">
+    <input id="questionInput" type="text" placeholder="输入制度问题" />
     <button id="queryButton">提问</button>
-    <pre id="answerBox">尚未提问</pre>
-    <h2>引用片段</h2>
-    <pre id="sourcesBox" style="white-space: pre-wrap;"></pre>
+    <pre id="answerBox"></pre>
+    <pre id="sourcesBox"></pre>
+  </div>
 
-    <script>
-        const fileInput = document.getElementById("fileInput");
-        const uploadButton = document.getElementById("uploadButton");
-        const uploadStatus = document.getElementById("uploadStatus");
+  <!-- 来源区：橙色 -->
+  <div id="sourceArea">
+    <h4>来源列表</h4>
+    <div id="listBox"></div>
+  </div>
 
-        uploadButton.addEventListener("click", upload);
+  <script>
+    const fileInput = document.getElementById("fileInput");
+    const uploadButton = document.getElementById("uploadButton");
+    const uploadStatus = document.getElementById("uploadStatus");
+    const questionInput = document.getElementById("questionInput");
+    const queryButton = document.getElementById("queryButton");
+    const answerBox = document.getElementById("answerBox");
+    const sourcesBox = document.getElementById("sourcesBox");
+    const listBox = document.getElementById("listBox");
 
-        const questionInput = document.getElementById("questionInput");
-        const queryButton = document.getElementById("queryButton");
-        const answerBox = document.getElementById("answerBox");
-        const sourcesBox = document.getElementById("sourcesBox");
+    // 上传文件
+    async function upload() {
+      const file = fileInput.files[0];
+      if (!file) return;
+      const fd = new FormData();
+      fd.append("file", file);
+      const resp = await fetch("/upload", { method: "POST", body: fd });
+      const data = await resp.json();
+      uploadStatus.textContent = resp.ok
+        ? "已入库：" + data.source + "，" + data.blocks + " 块"
+        : "上传失败：" + data.detail;
+      loadSources();
+    }
 
-        queryButton.addEventListener("click", query);
+    // 提问
+    async function query() {
+      const question = questionInput.value.trim();
+      if (!question) return;
+      const resp = await fetch("/query", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: question, k: 3 }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) {
+        answerBox.textContent = "查询失败：" + data.detail;
+        return;
+      }
+      answerBox.textContent = data.answer;
+      sourcesBox.textContent = "";
+      for (let i = 0; i < data.sources.length; i++) {
+        sourcesBox.textContent +=
+          "[" + (i + 1) + "] " + data.sources[i][0] + "\n" + data.sources[i][1] + "\n\n";
+      }
+    }
 
+    // 加载来源列表
+    async function loadSources() {
+      const resp = await fetch("/sources");
+      const data = await resp.json();
+      listBox.textContent = "";
+      data.sources.sort((a, b) => b.blocks - a.blocks);
+      for (const s of data.sources) {
+        const row = document.createElement("div");
+        row.textContent = s.source + "（" + s.blocks + " 块）";
 
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "删除";
+        delBtn.className = "deleteButton";
+        delBtn.addEventListener("click", () => remove(s.source));
 
-        function showSources(sources) {
-            if (sources.length === 0) {
-                sourcesBox.textContent = "没有引用片段";
-                return;
-            }
+        row.appendChild(delBtn);
+        listBox.appendChild(row);
+      }
+    }
 
-            sourcesBox.textContent = "";
-            for (let i = 0; i < sources.length; i++) {
-                const source = sources[i][0];
-                const text = sources[i][1];
-                sourcesBox.textContent += "[" + (i + 1) + "] 来源：" + source + "\n" + text + "\n\n";
-            }
-        }
+    // 删除某个来源
+    async function remove(name) {
+      const resp = await fetch("/source/" + name, { method: "DELETE" });
+      const data = await resp.json();
+      uploadStatus.textContent = resp.ok
+        ? "已删除：" + name
+        : "删除失败：" + data.detail;
+      loadSources();
+    }
 
-        async function query() {
-            sourcesBox.textContent = "";
-            const question = questionInput.value.trim();
-            if (!question) {
-                answerBox.textContent = "请输入问题";
-                return;
-            }
-            queryButton.disabled = true;
-            answerBox.textContent = "正在查询…";
-            try {
-                const resp = await fetch("/query", {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({question: question, k: 3})
-                });
-                const data = await resp.json();
-                if (!resp.ok) {
-                    answerBox.textContent = "查询失败：" + data.detail;
-                    return;
-                }
-                answerBox.textContent = data.answer;
-                showSources(data.sources);
-            } catch (error) {
-                answerBox.textContent = "连接或响应异常，请检查后端服务";
-            } finally {
-                queryButton.disabled = false;
-            }
-        }
-
-        async function upload() {
-            const file = fileInput.files[0];
-            if (!file) {
-                uploadStatus.textContent = "请先选择文件";
-                return;
-            }
-            const fd = new FormData();
-            fd.append("file", file);
-
-            uploadButton.disabled = true;
-            uploadStatus.textContent = "正在上传…";
-            try {
-                const resp = await fetch("/upload", {method: "POST", body: fd});
-                const data = await resp.json();
-                if (!resp.ok) {
-                    uploadStatus.textContent = "上传失败：" + data.detail;
-                    return;
-                }
-                uploadStatus.textContent = "已入库：" + data.source + "，块数：" + data.blocks;
-            } catch (error) {
-                uploadStatus.textContent = "连接或响应异常，请检查后端服务";
-            } finally {
-                uploadButton.disabled = false;
-            }
-        }
-    </script>
+    uploadButton.addEventListener("click", upload);
+    queryButton.addEventListener("click", query);
+    loadSources();
+  </script>
 </body>
 </html>
