@@ -1,7 +1,9 @@
 # projects/rag-kb/loader.py
 # 文档加载：读取制度文件，并清理多余空白。
+import io
 from pathlib import Path
 
+import pypdf.errors
 from pypdf import PdfReader
 
 DATA_DIR = Path(__file__).parent / "data"  # 锚定，不管从哪个目录跑都对
@@ -38,35 +40,71 @@ def load_documents(data_dir: Path) -> list[dict[str, str]]:
     return docs
 
 
+# ============================================================================
+# 今日新增：parse_bytes —— 让「解析规则」只存在一份
+#
+# 【要解决的问题】
+# 同一个文件，现在有两条解析路径，各写各的，能力还不一样：
+#   路径 A（网页上传）：api.py 第 36~52 行 → 坏 PDF 能兜住（第 45~46 行）
+#   路径 B（命令行入库）：load_document   → 坏 PDF 直接炸（没有那三行）
+# 结果：改一处漏一处，两边行为不一致。目标 = 解析只留一份，放在本文件。
+#
+# 【为什么参数收 content（字节）而不是 path（路径）】
+#   因为「校验必须在落盘之前」—— 落盘前磁盘上还没有这个文件，只有内存里的字节。
+#   两条路手里各有什么：
+#     api.py 上传   ：content = await file.read()（第 30 行）→ 有字节，还没有路径
+#     load_document ：path                                   → 有路径，没有字节
+#   所以新入口收「名字 + 字节」，两种调用方都能用。
+#
+# 【content 到底是什么】
+#   就是 api.py 第 30 行 `await file.read()` 那个变量，类型是 bytes。
+#   bytes = 还没解码的原始数据；要变成文字得靠 decode()。
+#   对照：api.py 第 38 行 content.decode("utf-8") 就是「字节 → 文字」。
+#        load_document 原来那行 path.read_text(encoding="utf-8") 内部也是这两步。
+# ============================================================================
+def parse_bytes(filename: str, content: bytes) -> str:
+    """名字 + 字节 -> 清洗后的正文；任何失败都 raise ValueError。
+
+    filename：只用来看扩展名，以及报错时说清是哪个文件。
+    content ：文件原始字节。本函数不读磁盘、不写磁盘。
+    """
+    suffix = Path(filename).suffix.lower()  # '报销.PDF' -> '.pdf'
+
+    if suffix == ".md":
+        try:
+            text = content.decode("utf-8")
+        except UnicodeDecodeError as e:
+            raise ValueError(f"文件编码无法识别: {filename}") from e
+
+    elif suffix == ".pdf":
+        try:
+            reader = PdfReader(io.BytesIO(content))
+            text = "\n".join(page.extract_text() or "" for page in reader.pages)
+        except pypdf.errors.PyPdfError as e:
+            raise ValueError(f"文件无法解析: {filename}") from e
+
+    else:
+        raise ValueError(f"只支持 .md / .pdf: {filename}")
+
+    cleaned = clean_text(text)
+    if not cleaned:
+        raise ValueError(f"文件内容为空: {filename}")
+
+    return cleaned
+
+
 def load_document(path: str | Path) -> dict[str, str]:
     """读单个文件（.md / .pdf），返回 {"source": 文件名, "text": 清洗后正文}。"""
     path = Path(path)
-    suffix = path.suffix.lower()
 
     if not path.exists():
         raise FileNotFoundError(f"文件不存在: {path}")
 
-    if suffix == ".md":
-        raw = path.read_text(encoding="utf-8")
-        text = clean_text(raw)
-        if not text:
-            raise ValueError(f"空白文件: {path}")
-        doc = {"source": path.name, "text": text}
-        return doc
+    content = path.read_bytes()
+    text = parse_bytes(path.name, content)
 
-    if suffix == ".pdf":
-        reader = PdfReader(path)
-        text = ""
-        for page in reader.pages:
-            text += page.extract_text()
-        if not text:
-            raise ValueError(f"空白文件: {path}")
-        text = clean_text(text)
-        doc = {"source": path.name, "text": text}
-        return doc
-
-    else:
-        raise ValueError("非pdf或md文件")
+    # ④ 包成原来的返回形状（source 用文件名，不是完整路径）。
+    return {"source": path.name, "text": text}
 
 
 # 直接运行本文件才执行演示；被其他文件导入时不执行。

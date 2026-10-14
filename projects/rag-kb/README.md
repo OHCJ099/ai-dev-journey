@@ -64,6 +64,8 @@ uv run uvicorn api_lab:app --port 8765 --app-dir projects\rag-kb       # 起服�
 
 然后浏览器打开 **http://127.0.0.1:8765/**。
 
+![网页界面](screenshot.png)
+
 - `api_lab:app` 用**离线假向量 + 假模型回复**，只验证页面接线，**不花钱、也不证明检索质量**。
 - 要用真实模型：把 `.env` 的 key 配好，起 `uv run uvicorn api:app --port 8765 --app-dir projects\rag-kb`（**真实 embedding 与生成都是付费调用**）。
 - **不能用 VS Code Live Server 打开页面** —— 页面要调 `/sources`、`/query` 这些后端接口，必须从 uvicorn 的地址进（同源）。
