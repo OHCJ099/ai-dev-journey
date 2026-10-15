@@ -45,21 +45,21 @@ def load_documents(data_dir: Path) -> list[dict[str, str]]:
 #
 # 【要解决的问题】
 # 同一个文件，现在有两条解析路径，各写各的，能力还不一样：
-#   路径 A（网页上传）：api.py 第 36~52 行 → 坏 PDF 能兜住（第 45~46 行）
-#   路径 B（命令行入库）：load_document   → 坏 PDF 直接炸（没有那三行）
+#   路径 A（网页上传）：api.py 载入逻辑 → 坏 PDF 能兜住
+#   路径 B（命令行入库）：load_document  → 坏 PDF 直接炸（没有那三行）
 # 结果：改一处漏一处，两边行为不一致。目标 = 解析只留一份，放在本文件。
 #
 # 【为什么参数收 content（字节）而不是 path（路径）】
 #   因为「校验必须在落盘之前」—— 落盘前磁盘上还没有这个文件，只有内存里的字节。
 #   两条路手里各有什么：
-#     api.py 上传   ：content = await file.read()（第 30 行）→ 有字节，还没有路径
+#     api.py 上传   ：await file.read() 拿到的 content        → 有字节，还没有路径
 #     load_document ：path                                   → 有路径，没有字节
 #   所以新入口收「名字 + 字节」，两种调用方都能用。
 #
 # 【content 到底是什么】
-#   就是 api.py 第 30 行 `await file.read()` 那个变量，类型是 bytes。
+#   就是 api.py 里 `await file.read()` 那个变量，类型是 bytes。
 #   bytes = 还没解码的原始数据；要变成文字得靠 decode()。
-#   对照：api.py 第 38 行 content.decode("utf-8") 就是「字节 → 文字」。
+#   对照：`content.decode("utf-8")` 就是「字节 → 文字」（这步现在在本函数内部做）。
 #        load_document 原来那行 path.read_text(encoding="utf-8") 内部也是这两步。
 # ============================================================================
 def parse_bytes(filename: str, content: bytes) -> str:

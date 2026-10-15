@@ -30,7 +30,7 @@ async def upload(file: UploadFile = File(...)):  # noqa: B008 -- FastAPI 上传�
     file_path = UPLOAD_PATH / Path(file.filename).name
 
     try:
-        loader.parse_bytes(file_path.name, content)
+        loaded_text = loader.parse_bytes(file_path.name, content)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -39,15 +39,14 @@ async def upload(file: UploadFile = File(...)):  # noqa: B008 -- FastAPI 上传�
     file_path.write_bytes(content)
 
     try:
-        count = ingest.ingest_file(file_path, INDEX_PATH, True)
+        count = ingest.ingest_file(file_path, INDEX_PATH, True, loaded_text=loaded_text)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-
     return {"source": file_path.name, "blocks": count}
 
 
 @app.get("/sources")
-async def get_collectino():
+async def get_collection():
     counts: dict[str, int] = {}
     d = []
 
@@ -65,8 +64,8 @@ async def get_collectino():
 
 @app.delete("/source/{name}")
 async def delete_source(name: str):
-    collectino = index_store.open_index(INDEX_PATH)
-    deleted = index_store.delete_source(collectino, name)
+    collection = index_store.open_index(INDEX_PATH)
+    deleted = index_store.delete_source(collection, name)
     if deleted == 0:
         raise HTTPException(status_code=404, detail="来源不存在")
 

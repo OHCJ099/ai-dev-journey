@@ -9,8 +9,19 @@ CHUNK_SIZE = 500
 OVERLAP = 50
 
 
-def ingest_file(path: str | Path, index_path: str | Path, replace: bool = False) -> int:
-    file = load_document(path)
+def ingest_file(
+    path: str | Path, index_path: str | Path, replace: bool = False, loaded_text=None
+) -> int:
+
+    if loaded_text is not None:
+        path = Path(path)
+        if not path.exists():
+            raise FileNotFoundError(f"文件不存在: {path}")
+        file = {"source": path.name, "text": loaded_text}
+
+    else:
+        file = load_document(path)
+
     chunks = split_text(file["text"], CHUNK_SIZE, OVERLAP)
     if len(chunks) == 0:
         raise ValueError(f"文件{file['source']}: chunks块为0")
