@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 
 import chromadb
+from config import CHUNK_SIZE, OVERLAP
 from dotenv import load_dotenv
 from loader import (
     load_documents,  # 读取并清洗文档，返回带来源和正文的列表
@@ -44,9 +45,9 @@ def build_index(docs):
     # 汇总所有文档的文本块。
     chunks = []
 
-    # 每块最多 500 字符，相邻块重叠 50 字符，并记录来源。
+    # 每块最多 CHUNK_SIZE 字符，相邻块重叠 OVERLAP 字符，并记录来源。
     for doc in docs:
-        for chunk in split_text(doc["text"], 500, 50):
+        for chunk in split_text(doc["text"], CHUNK_SIZE, OVERLAP):
             chunks.append(chunk)
             b_metadatas.append({"source": doc["source"]})
 

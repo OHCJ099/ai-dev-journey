@@ -1,12 +1,10 @@
 from pathlib import Path
 
+from config import CHUNK_SIZE, OVERLAP
 from index_store import add_chunks, delete_source, open_index
 from loader import load_document
 from retriever import embed
 from splitter import split_text
-
-CHUNK_SIZE = 500
-OVERLAP = 50
 
 
 def ingest_file(

@@ -1,6 +1,7 @@
 import sys
 from pathlib import Path
 
+from config import CHUNK_SIZE, OVERLAP
 from index_store import open_index
 from ingest import ingest_file
 from loader import load_document
@@ -16,7 +17,7 @@ FILE_PATH = Path(__file__).parent / "data"
 
 def do_write(file="考勤制度.md"):
     doc = load_document(FILE_PATH / file)
-    chunks = split_text(doc["text"], 500, 50)
+    chunks = split_text(doc["text"], CHUNK_SIZE, OVERLAP)
     print(f"预计计算向量[{len(chunks)}]次")
 
     write_times = ingest_file(FILE_PATH / file, INDEX_PATH)

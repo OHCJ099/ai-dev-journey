@@ -11,6 +11,10 @@
   "editor.parameterHints.enabled": true,
   "editor.inlineSuggest.enabled": false,
   "python.analysis.typeCheckingMode": "basic",
+  "python.defaultInterpreterPath": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/projects/rag-kb"
+  ],
   "python.analysis.inlayHints.variableTypes": true,
   "python.analysis.inlayHints.functionReturnTypes": true,
   "editor.formatOnSave": false,

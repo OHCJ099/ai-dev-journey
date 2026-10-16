@@ -3,6 +3,7 @@ import math
 import os
 from pathlib import Path
 
+from config import CHUNK_SIZE, OVERLAP
 from dotenv import load_dotenv
 from loader import load_documents
 from openai import OpenAI
@@ -111,8 +112,8 @@ if __name__ == "__main__":
     new_chunks = []
 
     for doc in docs:
-        # 把每篇文档切分成 500 字左右的块，块之间重叠 50 字
-        for chunk in split_text(doc["text"], 500, 50):
+        # 把每篇文档切分成 CHUNK_SIZE 字左右的块，块之间重叠 OVERLAP 字
+        for chunk in split_text(doc["text"], CHUNK_SIZE, OVERLAP):
             new_chunks.append(
                 {
                     "source": doc["source"],  # 来源文件名

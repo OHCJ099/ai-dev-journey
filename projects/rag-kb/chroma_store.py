@@ -7,6 +7,7 @@
 from pathlib import Path
 
 import chromadb
+from config import CHUNK_SIZE, OVERLAP
 from loader import load_documents
 from retriever import embed  # 复用你自己写的向量化函数
 from splitter import split_text
@@ -48,7 +49,7 @@ if __name__ == "__main__":
     chunks = []
     for doc in docs:
         # extend 将当前文档的多个块加入同一个总列表。
-        chunks.extend(split_text(doc["text"], 500, 50))
+        chunks.extend(split_text(doc["text"], CHUNK_SIZE, OVERLAP))
 
     collection = build_collection(chunks)
 
