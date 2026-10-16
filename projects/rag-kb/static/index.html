@@ -82,7 +82,7 @@
       const resp = await fetch("/query", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: question, k: 3 }),
+        body: JSON.stringify({ question: question}),
       });
       const data = await resp.json();
       if (!resp.ok) {
