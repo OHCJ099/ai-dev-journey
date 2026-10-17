@@ -18,10 +18,15 @@ def fake_create(**kwargs):
     assert messages[1]["role"] == "user"
     assert "参考材料：" in messages[1]["content"]
     assert "问题：" in messages[1]["content"]
+
     message = SimpleNamespace(
         content="【离线测试占位，非模型答案】回答生成接线已执行。"
     )
-    return SimpleNamespace(choices=[SimpleNamespace(message=message)])
+
+    # 👇 关键：补上 usage 字段，骗过读取 token 用量的代码
+    usage = SimpleNamespace(prompt_tokens=10, completion_tokens=20, total_tokens=30)
+
+    return SimpleNamespace(choices=[SimpleNamespace(message=message)], usage=usage)
 
 
 enable_offline()

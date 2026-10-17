@@ -9,12 +9,12 @@ from openai import (
     OpenAI,
 )
 
-BASE_URL = "https://tokenrhythm.studio/v1"
+BASE_URL = "https://api.deepseek.com/v1"
 MODEL = "deepseek-flash"
 TIMEOUT = 60.0
 
 load_dotenv()
-key = os.getenv("TOKENRHYTHM_API_KEY")
+key = os.getenv("DEEPSEEK_API_KEY")
 if not key:
     raise SystemExit("提示：没找到 key")
 

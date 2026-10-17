@@ -1,3 +1,7 @@
+import json
+from pathlib import Path
+
+import config
 from config import TOP_K
 from index_store import open_index
 from retriever import embed
@@ -21,6 +25,27 @@ def query_index(collection, question, k=TOP_K, source=None) -> list[tuple[str, s
     docs = result["documents"][0]
     metas = result["metadatas"][0]
     return [(m.get("source"), d) for m, d in zip(metas, docs)]
+
+
+def tokens_calculate(question: str, prompt_tokens: int, completion_tokens: int) -> None:
+    """把一次问答的 token 用量与估算费用追加到 JSONL 日志。
+
+    token 数是原值，费用单独算一个字段 —— 两者不能混在一个键里。
+    """
+    cost = (
+        prompt_tokens * config.DEEPSEEK_FLASH_PROMPT
+        + completion_tokens * config.DEEPSEEK_FLASH_COMPLETION
+    )
+    row: dict[str, str | int | float] = {
+        "question": question,
+        "prompt_tokens": prompt_tokens,
+        "completion_tokens": completion_tokens,
+        "cost_cny": cost,
+    }
+    log_path = Path(config.COST_LOG_PATH)
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(log_path, "a", encoding="UTF-8") as f:
+        f.write(json.dumps(row, ensure_ascii=False) + "\n")
 
 
 if __name__ == "__main__":

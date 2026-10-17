@@ -123,6 +123,12 @@ async def query(req: QueryRequest):
     reply = resp.choices[0].message.content
     if not reply:
         raise HTTPException(status_code=502, detail="模型回复为空")
+    u = resp.usage
+
+    if not u:
+        raise HTTPException(status_code=502, detail="无usage返回")
+    query_lab.tokens_calculate(req.question, u.prompt_tokens, u.completion_tokens)
+
     return {"answer": reply, "sources": hits}
 
 
