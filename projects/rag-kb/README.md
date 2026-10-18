@@ -17,6 +17,8 @@ RAG 知识库问答系统。当前进度：**文档处理 ✅ W9 → 向量化�
 | `eval_questions.md` | 评估集 20 题（开发 12 + 留出 8）+ 判定列 | — | 🔄 W12 |
 | `eval_run.py` | 读评估集 → 逐题检索 top-3 → 统计「开发集 X/Y」 | `loader` `qa` | 🔄 W12 |
 | `reference/` | 参考答案（卡住 25 分钟以上再看）：`loader_reference.py` / `splitter_reference.py` | — | — |
+| `failure-cases.md` | **真实失败案例 4 条**（同名坏文件毁好文件 / 护栏丢失 `k=0` 打到 Chroma / 同一个值散在 6 个文件里 / 假真向量库共用一个目录）：现象 → 根因 → 修法 → 怎么验证 | — | ✅ W15 |
+| `practice/` | **W9-W15 的小练习**（`id_practice*.py` / `blocks_per_source.py` / `max_key_practice.py` / `build_context_practice.py`），全部自足无 import，可独立跑 | — | — |
 | `data/` | 语料：5 份企业制度 `.md`（员工手册节选 / 考勤 / 报销 / 请假 / 安全） | — | ✅ W9 |
 
 **依赖关系**（`embed()` 是唯一的向量化入口，`chroma_store` / `qa` 都复用它）：
