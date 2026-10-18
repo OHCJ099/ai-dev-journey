@@ -6,8 +6,11 @@
 from types import SimpleNamespace
 
 import api
+import config
 import qa
 from demo_w13 import enable_offline
+
+api.INDEX_PATH = config.OFFLINE_INDEX_PATH
 
 
 def fake_create(**kwargs):

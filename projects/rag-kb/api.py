@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import config
 import index_store
 import ingest
 import loader
@@ -18,7 +19,7 @@ from openai import (
 app = FastAPI()
 
 UPLOAD_PATH = Path("D:/Hermes/cache/scratch/w14/uploads")
-INDEX_PATH = Path("D:/Hermes/cache/scratch/w14/index_offline")
+INDEX_PATH = config.REAL_INDEX_PATH
 
 
 # 接收上传文件，保存后调用已有入库函数。

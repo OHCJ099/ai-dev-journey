@@ -1,6 +1,6 @@
 # rag-kb · 企业制度知识库（项目②，毕设 #91 同源）
 
-RAG 知识库问答系统。当前进度：**文档处理 ✅ W9 → 向量化与检索 ✅ W10 → 拼上下文与问答 ✅ W11 → 检索优化与评估 🔄 W12（进行中）**。
+RAG 知识库问答系统。当前进度：**文档处理 ✅ W9 → 向量化与检索 ✅ W10 → 拼上下文与问答 ✅ W11 → 检索优化与评估 ✅ W12 → 工程化（上传 / 索引 / 增量）✅ W13 → 网页版 ✅ W14 → 调优与成本 ✅ W15 → 部署（W16，进行中）**。
 
 ## 文件地图（找函数先看这张表）
 
@@ -77,3 +77,31 @@ uv run uvicorn api_lab:app --port 8765 --app-dir projects\rag-kb       # 起服�
 | `GET /sources` | 列出库内来源与块数 |
 | `DELETE /source/{name}` | 删除某个来源 |
 
+## 架构图
+
+```mermaid
+flowchart TD
+    U["浏览器 手机/电脑"] -->|HTTP| A["FastAPI<br/>/upload /query /sources DELETE"]
+
+    A --> UP["/upload 链"]
+    UP --> P["parse_bytes"] --> SP["splitter"] --> E1["embed"] --> W[("写入 Chroma")]
+
+    A --> Q["/query 链"]
+    Q --> E2["embed 问题"] --> RD[("检索 Chroma")]
+    RD --> BC["build_context"] --> L["DeepSeek"] --> R["answer + sources"]
+```
+
+> 索引目录由启动哪个入口决定：`api_lab` → `index_offline`（3 维假向量），`api` → `index_real`（1024 维真向量）。图上两个框表示「写」和「读」两种动作，不是两个库。
+
+> `answer` 与 `sources` 共用同一次检索结果：`hits` 只检索一遍，既拼进 `build_context` 的参考材料交给模型，又原样作为 `sources` 返回，所以两者是同一批片段 —— 这就是引用可溯源。
+
+## 局域网访问（手机 / 其他电脑）
+
+```powershell
+uv run uvicorn api_lab:app --host 0.0.0.0 --port 8765 --app-dir projects\rag-kb
+```
+
+- `127.0.0.1`：只服务本机；`0.0.0.0`：监听所有网卡。后者是绑定标记，不能直接当访问地址。
+- 查 IP 用 `ipconfig`：只认 WLAN 的 `192.168.61.216`；`198.18.0.x`（代理）和 `192.168.190.x` / `192.168.80.x`（VMware 虚拟网卡）都不要用。
+- 防火墙：python.exe 已有 Public 档入站放行（实际命中的是 `uv\python\cpython-3.13.15` 那条）。规则绑定具体 Python 路径，换版本后需要重新放行。
+- 手机访问：`http://<电脑IP>:8765/`，需同时满足 `--host 0.0.0.0`、同一 WiFi、防火墙放行。
