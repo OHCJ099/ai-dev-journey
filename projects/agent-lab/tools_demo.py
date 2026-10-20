@@ -12,6 +12,12 @@ client = OpenAI(
 )
 
 
+def divide(a, b):
+    if b == 0:
+        raise ValueError("除数不能为 0")
+    return a / b
+
+
 def multiply(a, b):
     return a * b
 
@@ -25,6 +31,18 @@ def get_weather(city):
 
 
 TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "divide",
+            "description": "计算两个数字相除",
+            "parameters": {
+                "type": "object",
+                "properties": {"a": {"type": "number"}, "b": {"type": "number"}},
+                "required": ["a", "b"],
+            },
+        },
+    },
     {
         "type": "function",
         "function": {
@@ -73,45 +91,52 @@ messages_list = [
     ],
     [{"role": "user", "content": "你是什么模型？"}],
 ]
-for messages in messages_list:
-    r1 = client.chat.completions.create(
-        model="deepseek-flash", messages=messages, tools=TOOLS
-    )
 
-    msg = r1.choices[0].message
+TOOLS_BY_NAME = {
+    "multiply": multiply,
+    "count_chars": count_chars,
+    "get_weather": get_weather,
+    "divide": divide,
+}
 
-    if r1.choices[0].finish_reason == "stop":
-        print("第1轮就结束了，无需调用工具。答案:\n", msg.content)
+
+if __name__ == "__main__":
+    for messages in messages_list:
+        r1 = client.chat.completions.create(
+            model="deepseek-flash", messages=messages, tools=TOOLS
+        )
+
+        msg = r1.choices[0].message
+
+        if r1.choices[0].finish_reason == "stop":
+            print("第1轮就结束了，无需调用工具。答案:\n", msg.content)
+            print("=========================================")
+            continue
+
+        messages.append(msg.model_dump(exclude_none=True))
+        print(json.dumps(messages, ensure_ascii=False, indent=2))
+        print("第1轮 finish_reason =", r1.choices[0].finish_reason)
+
+        for tc in msg.tool_calls or []:
+            args = json.loads(tc.function.arguments)
+
+            tool_use = TOOLS_BY_NAME.get(tc.function.name)
+            if tool_use is not None:
+                result = tool_use(**args)
+
+            else:
+                result = f"未知工具: {tc.function.name}"
+
+            print("执行工具", tc.function.name, args, "→", result)
+            messages.append(
+                {"role": "tool", "tool_call_id": tc.id, "content": str(result)}
+            )
+
+        r2 = client.chat.completions.create(
+            model="deepseek-flash", messages=messages, tools=TOOLS
+        )
+
+        print("第2轮 finish_reason =", r2.choices[0].finish_reason)
+        print("答案:", r2.choices[0].message.content)
+
         print("=========================================")
-        continue
-
-    messages.append(msg.model_dump(exclude_none=True))
-    print(json.dumps(messages, ensure_ascii=False, indent=2))
-    print("第一轮 finish_reason =", r1.choices[0].finish_reason)
-
-    for tc in msg.tool_calls or []:
-        args = json.loads(tc.function.arguments)
-
-        if tc.function.name == "multiply":
-            result = multiply(**args)
-
-        elif tc.function.name == "count_chars":
-            result = count_chars(**args)
-
-        elif tc.function.name == "get_weather":
-            result = get_weather(**args)
-
-        else:
-            result = f"未知工具: {tc.function.name}"
-
-        print("执行工具", tc.function.name, args, "→", result)
-        messages.append({"role": "tool", "tool_call_id": tc.id, "content": str(result)})
-
-    r2 = client.chat.completions.create(
-        model="deepseek-flash", messages=messages, tools=TOOLS
-    )
-
-    print("第2轮 finish_reason =", r2.choices[0].finish_reason)
-    print("答案:", r2.choices[0].message.content)
-
-    print("=========================================")
