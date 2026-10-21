@@ -3,6 +3,7 @@ import json
 import os
 
 from dotenv import load_dotenv
+from langchain_core.tools import tool
 from openai import OpenAI
 
 load_dotenv()
@@ -12,21 +13,29 @@ client = OpenAI(
 )
 
 
-def divide(a, b):
+@tool
+def divide(a: float, b: float) -> str:
+    """两数相除。传入两个数字，返回它们的商。"""
     if b == 0:
         raise ValueError("除数不能为 0")
-    return a / b
+    return str(a / b)
 
 
-def multiply(a, b):
-    return a * b
+@tool
+def multiply(a: float, b: float) -> str:
+    """两数相乘。传入两个数字，返回它们的积。"""
+    return str(a * b)
 
 
-def count_chars(text):
-    return len(text)
+@tool
+def count_chars(text: str) -> str:
+    """计算文本的字符长度。传入一段文本，返回字数。"""
+    return str(len(text))
 
 
-def get_weather(city):
+@tool
+def get_weather(city: str) -> str:
+    """获取指定城市的天气情况。传入城市名，返回天气。"""
     return f"{city}, 晴, 25℃"
 
 
@@ -122,7 +131,7 @@ if __name__ == "__main__":
 
             tool_use = TOOLS_BY_NAME.get(tc.function.name)
             if tool_use is not None:
-                result = tool_use(**args)
+                result = tool_use.invoke(args)
 
             else:
                 result = f"未知工具: {tc.function.name}"

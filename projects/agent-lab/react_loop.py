@@ -61,7 +61,7 @@ while step < MAX_STEPS and not done:
             if tool_use is None:
                 raise ValueError(f"不存在工具[{name}]")
 
-            result = tool_use(**args)
+            result = tool_use.invoke(args)
             content = str(result)
 
             success = True
