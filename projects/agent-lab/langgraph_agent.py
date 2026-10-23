@@ -2,6 +2,7 @@ import os
 from typing import Annotated, TypedDict
 
 from dotenv import load_dotenv
+from langchain_core.messages import AIMessage
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END, StateGraph
 from langgraph.graph.message import add_messages
@@ -23,15 +24,29 @@ class State(TypedDict):
 
 
 def agent(state: State):
+    error_count = 0
+    for msg in reversed(state["messages"]):
+        status = getattr(msg, "status", None)
+        if status == "error":
+            error_count += 1
+        elif status == "success":
+            break
+
+    if error_count >= 3:
+        return {
+            "messages": [AIMessage(content="系统连续报错达到 3 次，已强制终止任务。")]
+        }
+
     resp = llm.bind_tools([multiply, divide, get_weather, count_chars]).invoke(
         state["messages"]
     )
-    print(f"[agent] 返回tool_calls={resp.tool_calls}")
+    print(f"[agent] 返回 tool_calls={resp.tool_calls}")
     return {"messages": [resp]}
 
 
 def should_continue(state: State) -> str:
-    return "tools" if state["messages"][-1].tool_calls else END
+    last_msg = state["messages"][-1]
+    return "tools" if getattr(last_msg, "tool_calls", None) else END
 
 
 g = StateGraph(State)
@@ -43,12 +58,6 @@ g.add_node(
 g.set_entry_point("agent")
 
 g.add_conditional_edges("agent", should_continue, {"tools": "tools", END: END})
-
 g.add_edge("tools", "agent")
 
 app = g.compile()
-
-out = app.invoke(
-    {"messages": [{"role": "user", "content": "12 乘 8 再除以 4"}]},
-    {"recursion_limit": 10},
-)
