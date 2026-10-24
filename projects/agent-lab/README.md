@@ -54,6 +54,45 @@ uv run python projects/agent-lab/react_loop.py
 
 **重试 vs 换工具**：重试由**程序**计数（`fail_counts[name]`），换工具由**模型**自己决定（下一轮自己换 `name` 或改参数），程序从不替模型选工具。
 
+## W19：LangGraph 版 Agent（`langgraph_agent.py`）
+
+```powershell
+cd D:\dev\ai-dev-journey
+uv run python projects/agent-lab/langgraph_agent.py
+```
+
+同一个「12×8÷4」任务用状态机重写：`agent` 节点决定调什么工具 → `tools` 节点执行 → 回到 `agent`，直到模型不再要 `tool_calls`。
+
+**它比 `react_loop.py` 多了三层保险**（W19-D2/D3 补的）：
+
+| 层 | 在哪 | 挡什么 |
+|---|---|---|
+| `handle_tool_errors=True` | `ToolNode(...)` | 工具执行期异常 / 工具名错 / 参数错 → 转成 `status="error"` 的 `ToolMessage` 喂回模型 |
+| 按工具名计数的熔断 | `agent()` 开头（`fail_counts`） | 同一工具连续失败 3 次 → 造一条无 `tool_calls` 的 `AIMessage` 收工 |
+| `recursion_limit` | `invoke/stream` 的 config | 兜底，防总步数失控 |
+
+**`fail_counts` 为什么按名字分桶**：只数「连续 error」会被别的工具的成功截断（`divide` 连败 4 次，中间夹一次 `multiply` 成功就永远数不到 3）。按 `name` 分桶后，`multiply` 成功只清 `multiply` 自己的账。**扫描必须正序**，倒序会把最近的成功当开头，把成功之前的旧失败全算成「连续」。
+
+**短期记忆**：`g.compile(checkpointer=MemorySaver())`，`invoke` 时传 `{"configurable": {"thread_id": "..."}}`。
+
+- 同一个 `thread_id` → `state["messages"]` 累积该 thread **全部历史**（第 2 轮「刚才那个结果再加 10」能答出 34，是因为历史里有 `tool: 24.0`，不是模型自己记得）
+- 换 `thread_id` → 全新状态，答不出
+- `MemorySaver` 存在**进程内存**，脚本退出即丢
+
+**config 是两层，别叠错**：
+
+```python
+# config 是两层，thread_id 在内层，recursion_limit 在外层
+{
+    "configurable": {"thread_id": "A"},
+    "recursion_limit": 10,
+}
+```
+
+把 `recursion_limit` 塞进 `configurable` 里 **不报错、不警告、静默失效**（实测）。只给 `recursion_limit` 不给 `thread_id` 则抛 `ValueError: Checkpointer requires ... thread_id`。
+
+**两个脚本都要 `.env` 里的 `DEEPSEEK_API_KEY`**（模型端点 `https://api.deepseek.com/v1`）。
+
 ## 已知限制
 
 ### `tools_demo.py`（W17）
@@ -63,7 +102,22 @@ uv run python projects/agent-lab/react_loop.py
 
 ### `react_loop.py`（W18）
 
-- **模型返回坏 JSON 会让程序崩掉**：`json.loads(tc.function.arguments)` 在 `try` 外面（约第 54 行），`except Exception` 接不住 `JSONDecodeError`。修法是把 `json.loads` 移进 `try`，把解析失败也当成一条 `ERROR ...` 的 observation 喂回模型。
-- 单个任务单轮执行，没有对话记忆（多轮记忆在 W19）。
+- **模型返回坏 JSON 会让程序崩掉**：`json.loads(tc.function.arguments)` 在 `try` 外面（约第 54 行），`except Exception` 接不住 `JSONDecodeError`。修法是把 `json.loads` 移进 `try`，把解析失败也当成一条 `ERROR ...` 的 observation 喂回模型。**（W19-D2 已修：`json.loads` 移入 `try`，坏 JSON ×3 → 第 3 次终止、exit 0 不崩。）**
+- 单个任务单轮执行，没有对话记忆（多轮记忆在 W19）。**（W19 已提供 `langgraph_agent.py` + `MemorySaver`；本文件保留为手写版对照。）**
 - 没有 async，没有 LangGraph（W19 用框架重写一遍这个循环）。
 - 工具执行串行，并行 `tool_calls` 是一个个跑的。
+
+### `memory_agent.py`（W19 单节点最小版）
+
+- 只有一个 `chat` 节点、一次调用就结束 —— 用它看 `StateSnapshot` 字段最干净，但**它不是 Agent**，没有工具、没有循环、没有熔断。
+- 记忆同样只在进程内（`MemorySaver`）；没有长期记忆、没有偏好存储（留 W20 或项目③收尾）。
+
+### `langgraph_agent.py`（W19）
+
+- `MemorySaver` 在**进程内存**，脚本退出即丢；要跨进程得换 `SqliteSaver` / `PostgresSaver`（未做）。
+- `fail_counts` 是**每轮从完整历史重算**的，历史越长每轮扫得越久；真实长对话需要「只扫最近 N 条」或把计数存进 state 字段（未做）。
+- 没有 `interrupt` / 人工确认节点；没有 async。
+
+### 目录里的其他文件
+
+`practice/` 放的是 W19 学习期的探针与最小图（`w19a_two_nodes.py` 两节点黑板、`w19a_conditional.py` 条件边、`probe_graph.py` / `probe_limit.py` / `probe_llm.py`），只用于回顾，不是项目入口。

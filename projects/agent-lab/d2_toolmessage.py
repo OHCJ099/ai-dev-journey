@@ -31,7 +31,22 @@ def run(handle: bool, name: str, args: dict) -> dict:
     return g.compile().invoke({"messages": []})
 
 
+# 业务异常
+
+
 for m in run(True, "nope", {})["messages"]:
+    print(type(m).__name__)
+    print("  content =", repr(m.content))
+    print("  status  =", getattr(m, "status", "无此字段"))
+    print("  tool_call_id =", getattr(m, "tool_call_id", "无"))
+
+for m in run(True, "multiply", {"a": 12, "b": 8})["messages"]:  # 正常
+    print(type(m).__name__)
+    print("  content =", repr(m.content))
+    print("  status  =", getattr(m, "status", "无此字段"))
+    print("  tool_call_id =", getattr(m, "tool_call_id", "无"))
+
+for m in run(True, "divide", {"a": 96, "b": 0})["messages"]:
     print(type(m).__name__)
     print("  content =", repr(m.content))
     print("  status  =", getattr(m, "status", "无此字段"))
