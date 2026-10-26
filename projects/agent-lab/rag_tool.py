@@ -5,14 +5,16 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "rag-kb"))
 
 import config
 import query_lab
-from index_store import open_index
+from index_store import ensure_index, open_index
 from langchain_core.tools import tool
 
 
 @tool
 def search_kb(question: str) -> str:
     """在制度知识库里检索。输入一个自然语言问题，返回最相关的几段原文。"""
-    collection = open_index(config.REAL_INDEX_PATH)
+    # 索引丢了（例如被清理）就现场重建，避免空库在 query 里抛出难懂的 TypeError。
+    ensure_index(config.INDEX_PATH, config.DATA_DIR)
+    collection = open_index(config.INDEX_PATH)
     hits = query_lab.query_index(collection, question)
     parts = []
     for index, hit in enumerate(hits, start=1):

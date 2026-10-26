@@ -41,6 +41,29 @@ eval_run.py      ← loader, qa
 - **`Ctrl+Shift+O`** → 列出当前文件所有函数，直接跳
 - 看 import 行就知道函数住哪：`from splitter import split_text` → `split_text` 在 `splitter.py`
 
+## 数据与索引（10-26 重构）
+
+**所有路径由 `config.py` 按文件位置推算，不再有绝对路径。换机器、换目录直接能跑。**
+
+| 位置 | 内容 | 是否入库 |
+|---|---|---|
+| `data/*.md` | 语料（制度原文） | ✅ 入库 |
+| `data/index/` | 正式索引（Chroma），由 `data/*.md` 派生 | ❌ gitignore，可重建 |
+| `data/_lab/` | 测试/练习用临时库 | ❌ gitignore |
+| `data/uploads/` | 网页上传文件落地 | ❌ gitignore |
+| `logs/cost_log.jsonl` | 花费日志 | ❌ gitignore（`*.jsonl`） |
+
+**索引是可再生数据，不进 git。** 丢了不用管 —— 任何入口第一次调用都会自动重建：
+
+```python
+from index_store import ensure_index
+import config
+
+ensure_index(config.INDEX_PATH, config.DATA_DIR)  # 空则重建，非空直接返回
+```
+
+`ensure_index` 是**幂等**的：调多少次结果一样。语料目录为空时抛 `ValueError` 说人话，而不是让 `query` 抛 `TypeError: Number of requested results 0`。
+
 ## 怎么跑（在仓库根目录）
 
 ```powershell

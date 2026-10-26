@@ -18,8 +18,8 @@ from openai import (
 
 app = FastAPI()
 
-UPLOAD_PATH = Path("D:/Hermes/cache/scratch/w14/uploads")
-INDEX_PATH = config.REAL_INDEX_PATH
+UPLOAD_PATH = config.UPLOAD_DIR
+INDEX_PATH = config.INDEX_PATH
 
 
 # 接收上传文件，保存后调用已有入库函数。
@@ -75,11 +75,16 @@ async def delete_source(name: str):
 
 @app.post("/query")
 async def query(req: QueryRequest):
-    collection = index_store.open_index(INDEX_PATH)
     if req.question.strip() == "":
         raise HTTPException(status_code=400, detail="问题不能为空")
-    if collection.count() == 0:
-        raise HTTPException(status_code=404, detail="索引无块")
+
+    # 索引为空（例如被清理过）时先重建，再走查询；重建失败如实报 500 而不是 404。
+    try:
+        index_store.ensure_index(INDEX_PATH, config.DATA_DIR)
+    except ValueError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    collection = index_store.open_index(INDEX_PATH)
 
     try:
         hits = query_lab.query_index(collection, req.question, req.k)

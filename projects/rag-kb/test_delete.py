@@ -1,12 +1,12 @@
 """测试 delete_source：删除某来源后，库里到底变成什么样。"""
 
 import sys
-from pathlib import Path
 
+import config
 from index_store import add_chunks, delete_source, open_index
 
-# 练习库放 scratch，别动正式语料
-INDEX_PATH = Path("D:/Hermes/cache/scratch/w13/delete_lab")
+# 练习库放 data/_lab（已 gitignore），别动正式语料
+INDEX_PATH = config.LAB_DIR / "delete_lab"
 
 # 离线夹具向量 —— 不花钱、不代表语义
 FAKE_VECTORS = [[0.1, 0.2, 0.3], [0.9, 0.8, 0.7], [0.4, 0.5, 0.6]]

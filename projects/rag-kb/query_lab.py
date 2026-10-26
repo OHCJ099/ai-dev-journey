@@ -49,7 +49,7 @@ def tokens_calculate(question: str, prompt_tokens: int, completion_tokens: int) 
 
 
 if __name__ == "__main__":
-    collection = open_index("D:/Hermes/cache/scratch/w13/ingest_lab")
+    collection = open_index(config.LAB_DIR / "ingest_lab")
     q = "员工请假需要提前多久申请？"
 
     print("① 正常问题")

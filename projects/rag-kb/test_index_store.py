@@ -11,12 +11,12 @@
 
 import shutil
 import sys
-from pathlib import Path
 
+import config
 from index_store import add_chunks, open_index
 
-# 练习库放在 scratch 专用子目录，不写正式语料、不写生产索引。
-INDEX_PATH = Path("D:/Hermes/cache/scratch/w13/index_store_lab")
+# 练习库放在 data/_lab 下（已 gitignore），不写正式语料、不写生产索引。
+INDEX_PATH = config.LAB_DIR / "index_store_lab"
 
 FAKE_VECTORS = [[0.1, 0.2, 0.3], [0.9, 0.8, 0.7]]
 

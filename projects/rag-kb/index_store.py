@@ -15,6 +15,36 @@ def open_index(index_path: str | Path):
     return collection
 
 
+def ensure_index(index_path: str | Path, source_dir: str | Path) -> int:
+    """索引为空时从 source_dir 的 .md 重建；已有数据则原样返回块数。
+
+    幂等：调多少次都一样。目的是让「索引丢了」变成可自愈，而不是让调用方崩在
+    `TypeError: Number of requested results 0`。
+
+    返回重建后（或原本就有的）块数。source_dir 下没有可用 .md 时抛 ValueError ——
+    空库继续往下走只会在 query 时炸，这里提前说人话。
+    """
+    # 延迟导入：ingest 依赖 index_store，模块顶层互相 import 会成环。
+    from ingest import ingest_file
+
+    collection = open_index(index_path)
+    count = collection.count()
+    if count > 0:
+        return count
+
+    files = sorted(Path(source_dir).glob("*.md"))
+    if not files:
+        raise ValueError(
+            f"索引为空，且 {source_dir} 下没有可入库的 .md 文件。"
+            f"请先放入语料，或检查路径是否写错。"
+        )
+
+    for path in files:
+        ingest_file(path, index_path)
+
+    return collection.count()
+
+
 def add_chunks(
     collection, source: str, chunks: list[str], embeddings: list[list[float]]
 ) -> int:

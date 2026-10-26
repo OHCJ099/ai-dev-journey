@@ -1,15 +1,15 @@
 """W13 命令行串联练习：离线假向量，只验证数据流，不验证语义质量。"""
 
 import shutil
-from pathlib import Path
 
+import config
 import index_store
 import ingest
 import loader
 import query_lab
 import splitter
 
-LAB_DIR = Path("D:/Hermes/cache/scratch/w13_demo_20261011")
+LAB_DIR = config.LAB_DIR / "demo_w13"
 INDEX_PATH = LAB_DIR / "index"
 SAMPLE_A = LAB_DIR / "修订前" / "差旅报销制度.md"
 UPDATED_A = LAB_DIR / "修订后" / "差旅报销制度.md"
