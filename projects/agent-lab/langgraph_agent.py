@@ -15,8 +15,8 @@ from tools_demo import count_chars, divide, get_weather, multiply
 load_dotenv()
 
 llm = ChatOpenAI(
-    model="deepseek-flash",
-    base_url="https://api.deepseek.com/v1",
+    model=os.getenv("DEEPSEEK_MODEL") or "deepseek-v4.1-flash-cn",
+    base_url=os.getenv("DEEPSEEK_BASE_URL") or "http://127.0.0.1:8787/v1",
     api_key=SecretStr(os.getenv("DEEPSEEK_API_KEY") or ""),
 )
 

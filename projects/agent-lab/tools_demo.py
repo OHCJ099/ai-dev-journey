@@ -7,10 +7,12 @@ from langchain_core.tools import tool
 from openai import OpenAI
 
 load_dotenv()
+# 模型服务地址、密钥、模型名都从 .env 读，换供应商只改 .env。
 client = OpenAI(
-    base_url="https://api.deepseek.com/v1",
+    base_url=os.getenv("DEEPSEEK_BASE_URL") or "http://127.0.0.1:8787/v1",
     api_key=os.getenv("DEEPSEEK_API_KEY"),
 )
+MODEL = os.getenv("DEEPSEEK_MODEL") or "deepseek-v4.1-flash-cn"
 
 
 @tool
@@ -111,9 +113,7 @@ TOOLS_BY_NAME = {
 
 if __name__ == "__main__":
     for messages in messages_list:
-        r1 = client.chat.completions.create(
-            model="deepseek-flash", messages=messages, tools=TOOLS
-        )
+        r1 = client.chat.completions.create(model=MODEL, messages=messages, tools=TOOLS)
 
         msg = r1.choices[0].message
 
@@ -141,9 +141,7 @@ if __name__ == "__main__":
                 {"role": "tool", "tool_call_id": tc.id, "content": str(result)}
             )
 
-        r2 = client.chat.completions.create(
-            model="deepseek-flash", messages=messages, tools=TOOLS
-        )
+        r2 = client.chat.completions.create(model=MODEL, messages=messages, tools=TOOLS)
 
         print("第2轮 finish_reason =", r2.choices[0].finish_reason)
         print("答案:", r2.choices[0].message.content)

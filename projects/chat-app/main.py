@@ -22,13 +22,13 @@ app.mount(
 )
 
 # 模型服务地址、模型名和请求超时时间。
-BASE_URL = "https://api.deepseek.com/v1"
-MODEL = "deepseek-flash"
 TIMEOUT = 60.0
 ENV_FILE = Path(__file__).parent.parent.parent / ".env"
 
 # 从仓库根目录的 .env 读取密钥；缺少密钥时停止启动。
 load_dotenv(ENV_FILE)
+BASE_URL = os.getenv("DEEPSEEK_BASE_URL") or "http://127.0.0.1:8787/v1"
+MODEL = os.getenv("DEEPSEEK_MODEL") or "deepseek-v4.1-flash-cn"
 key = os.getenv("DEEPSEEK_API_KEY")
 if not key:
     raise SystemExit("没找到 DEEPSEEK_API_KEY，请检查 .env")

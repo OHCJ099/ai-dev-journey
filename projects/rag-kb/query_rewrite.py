@@ -8,7 +8,7 @@ from qa import MODEL, client
 # 文档和 .env 都根据本文件位置定位，不依赖启动目录。
 DATA_DIR = Path(__file__).parent / "data"
 ENV_FILE = Path(__file__).parent.parent.parent / ".env"
-BASE_URL = "https://api.deepseek.com/v1"
+BASE_URL = os.getenv("DEEPSEEK_BASE_URL") or "http://127.0.0.1:8787/v1"
 
 load_dotenv(ENV_FILE)
 ds_key = os.getenv("DEEPSEEK_API_KEY")

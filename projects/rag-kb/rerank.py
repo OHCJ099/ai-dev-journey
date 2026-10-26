@@ -8,11 +8,10 @@ from qa import build_context, retrieve_hits
 
 DATA_DIR = Path(__file__).parent / "data"
 ENV_FILE = Path(__file__).parent.parent.parent / ".env"
-BASE_URL = "https://api.deepseek.com/v1"
-MODEL = "deepseek-flash"
-
 # 读取生成回答所需的 DeepSeek 密钥。
 load_dotenv(ENV_FILE)
+BASE_URL = os.getenv("DEEPSEEK_BASE_URL") or "http://127.0.0.1:8787/v1"
+MODEL = os.getenv("DEEPSEEK_MODEL") or "deepseek-v4.1-flash-cn"
 ds_key = os.getenv("DEEPSEEK_API_KEY")
 if not ds_key:
     raise SystemExit("没找到 DEEPSEEK_API_KEY，请检查 .env")

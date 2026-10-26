@@ -8,10 +8,12 @@ from openai.types.chat import ChatCompletionMessageParam, ChatCompletionToolUnio
 from tools_demo import TOOLS, TOOLS_BY_NAME
 
 load_dotenv()
+# 模型服务地址、密钥、模型名都从 .env 读，换供应商只改 .env。
 client = OpenAI(
-    base_url="https://api.deepseek.com/v1",
+    base_url=os.getenv("DEEPSEEK_BASE_URL") or "http://127.0.0.1:8787/v1",
     api_key=os.getenv("DEEPSEEK_API_KEY"),
 )
+MODEL = os.getenv("DEEPSEEK_MODEL") or "deepseek-v4.1-flash-cn"
 
 MAX_STEPS = 8
 MAX_RETRIES = 3
@@ -31,7 +33,7 @@ def main() -> None:
     while step < MAX_STEPS and not done:
         step += 1
         resp = client.chat.completions.create(
-            model="deepseek-flash",
+            model=MODEL,
             messages=messages,
             tools=cast(list[ChatCompletionToolUnionParam], TOOLS),
         )
