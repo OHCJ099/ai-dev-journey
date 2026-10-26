@@ -12,6 +12,10 @@ from langchain_core.tools import tool
 @tool
 def search_kb(question: str) -> str:
     """在制度知识库里检索。输入一个自然语言问题，返回最相关的几段原文。"""
+    # 空问题直接返回提示：既不触发下面的索引重建（会产生付费 embedding），
+    # 也不让异常冒到 ToolNode 变成 error 状态的 ToolMessage。
+    if not question.strip():
+        return "问题为空，请提供具体要查的内容。"
     # 索引丢了（例如被清理）就现场重建，避免空库在 query 里抛出难懂的 TypeError。
     ensure_index(config.INDEX_PATH, config.DATA_DIR)
     collection = open_index(config.INDEX_PATH)
@@ -24,3 +28,4 @@ def search_kb(question: str) -> str:
 
 if __name__ == "__main__":
     print(search_kb.invoke("年假有几天"))
+    print(search_kb.invoke(" "))
