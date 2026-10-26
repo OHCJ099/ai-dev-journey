@@ -90,4 +90,8 @@ if __name__ == "__main__":
     print("\n====== 历史记录 ======")
     state = app.get_state(cfg_a)
     for m in state.values["messages"]:
-        print(f"{m.type}: {m.content}")
+        extra = ""
+        if getattr(m, "tool_calls", None):
+            extra = f"  tool_calls={[t['name'] for t in m.tool_calls]}"
+        print(f"{m.type}: {str(m.content)[:40]}{extra}")
+

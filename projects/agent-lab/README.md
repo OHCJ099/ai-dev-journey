@@ -123,6 +123,38 @@ uv run python projects/agent-lab/multi_tool_agent.py
 
 （文件位置：`projects/agent-lab/rag_tool.py`、`tools_demo.py` 的 `multiply`）
 
+### 二、复合任务的调用链
+
+同一句问话，模型**可能拆成并行、也可能拆成串行**，两种都实测到过。
+
+**并行**（1 次进 `agent` 就带两个调用，共 5 条消息）：
+
+```
+human  查一下年假有几天，然后算一下如果我有 3 天没休，能折算多少钱，每天 300 元
+ai     我来先查一下年假制度，同时算一下 3 天的折算金额。  tool_calls=['search_kb', 'multiply']
+tool   [1]请假制度.md：，年休假5天；…
+tool   900.0
+ai     根据制度查到的结果，回答如下：…
+```
+
+**串行**（两次进 `agent`，每次 1 个调用，共 6 条消息）：
+
+```
+human  同一句话
+ai     我先查一下年假制度。              tool_calls=['search_kb']
+tool   [1]请假制度.md：…
+ai     找到了年假规定。现在算一下折算金额。  tool_calls=['multiply']
+tool   900.0
+ai     根据制度查到的结果，回答如下：…
+```
+
+两个要点：
+
+1. **「ai 回应」和「ai 调工具」是同一条消息**。`AIMessage` 有 `content`（说的话）和 `tool_calls`（要做的事）两个字段，打印时若只打 `content` 就看不见 `tool_calls` —— 会误以为它们是两条。
+2. **哪条 `ToolMessage` 属于哪个调用，靠 `tool_calls[i]["id"]` ↔ `tool_call_id` 对应，不靠顺序**。
+
+**并行时谁能并行**：一条 `AIMessage` 的 `tool_calls` 里可放 N 个调用；`ToolNode` 会**并发执行同一批**（实测两个各 `sleep(2)` 的工具，总耗时 2.01s 而非 4s）。但**模型这一轮怎么拆是不保证的** —— 同一句话两次跑，并行/串行都出现过。
+
 ## 已知限制
 
 ### `tools_demo.py`（W17）
