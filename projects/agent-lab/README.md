@@ -91,7 +91,37 @@ uv run python projects/agent-lab/langgraph_agent.py
 
 把 `recursion_limit` 塞进 `configurable` 里 **不报错、不警告、静默失效**（实测）。只给 `recursion_limit` 不给 `thread_id` 则抛 `ValueError: Checkpointer requires ... thread_id`。
 
-**两个脚本都要 `.env` 里的 `DEEPSEEK_API_KEY`**（模型端点 `https://api.deepseek.com/v1`）。
+**两个脚本都要 `.env` 里的 `DEEPSEEK_API_KEY`**（模型端点见 `.env` 的 `DEEPSEEK_BASE_URL`，默认 `http://127.0.0.1:8787/v1`）。
+
+## W20：项目③ 多工具 Agent（`multi_tool_agent.py`）
+
+把项目② 的 RAG 检索包成工具，和 `multiply` 一起交给模型自行编排 —— 这是**项目③ 的主体**，不是教学样例。
+
+```powershell
+cd D:\dev\ai-dev-journey
+uv run python projects/agent-lab/multi_tool_agent.py
+```
+
+### 一、两个工具的契约
+
+| 工具名 | 输入 / 返回 | 什么时候会被调用 |
+|---|---|---|
+| `search_kb` | `(question: str) -> str` | 问题涉及公司制度、规章、请假、报销等**需要查文档才能答**的内容时（模型自己判断「我不知道，得查」） |
+| `multiply` | `(a: float, b: float) -> str` | 需要两个数字相乘时（如折算金额）；模型直接算得出来时**不会**调用 |
+
+**两边都是 `-> str` 不是巧合**：`ToolNode` 会把任何返回值转成字符串再塞进 `ToolMessage`（实测返回 `list` 得到 `'[["请假制度.md", "年休假5天"], ...]'`），所以返回 str 是**选择**而非限制。
+
+**`search_kb` 为什么自己拼字符串、不返回 `hits` 列表**：拼好的形式是
+
+```
+[1]请假制度.md：，年休假5天；已满10年不满20年的，年休假10天…
+
+[2]薪酬制度.md：…
+```
+
+每条带编号、带来源、条目间有空行。若直接返回列表，喂给模型的是 `'[["请假制度.md", "年休假5天"], ...]'` —— 编号没有、正文和来源挤在一个 JSON 串里，模型得先解析再理解。**格式在工具里定好，模型就不用猜。**
+
+（文件位置：`projects/agent-lab/rag_tool.py`、`tools_demo.py` 的 `multiply`）
 
 ## 已知限制
 
