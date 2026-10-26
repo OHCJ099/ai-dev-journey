@@ -180,6 +180,26 @@ ai     根据制度查到的结果，回答如下：…
 - `fail_counts` 是**每轮从完整历史重算**的，历史越长每轮扫得越久；真实长对话需要「只扫最近 N 条」或把计数存进 state 字段（未做）。
 - 没有 `interrupt` / 人工确认节点；没有 async。
 
+### `multi_tool_agent.py`（W20）
+
+**① `ensure_index` 只判空、不判完整性**
+
+- 现象：`index_store.py:32` 只有 `if count > 0: return count`，剩 1 块也当完整。
+- 触发：索引目录被部分删除、`COLLECTION_NAME` 改过又改回、`ingest_file` 中途 Ctrl+C。
+- 后果：库残缺却静默返回块数，检索结果变少或变错，**不报错**——比崩溃更难发现。
+
+**② `fail_counts` 每轮从完整历史重算**
+
+- 现象：`agent()` 开头每次都从头扫 `state["messages"]`。
+- 触发：每进一次 `agent` 节点。
+- 后果：对话越长越慢（每轮 O(n)，整轮累计 O(n²)）。
+
+**③ `MemorySaver` 只在进程内存**
+
+- 现象：`g.compile(checkpointer=MemorySaver())`。
+- 触发：脚本退出 / 进程结束。
+- 后果：`thread_id="A"` 的全部历史丢失，无法跨进程续聊；要持久化需换 `SqliteSaver`。
+
 ### 目录里的其他文件
 
 `practice/` 放的是 W19 学习期的探针与最小图（`w19a_two_nodes.py` 两节点黑板、`w19a_conditional.py` 条件边、`probe_graph.py` / `probe_limit.py` / `probe_llm.py`），只用于回顾，不是项目入口。
