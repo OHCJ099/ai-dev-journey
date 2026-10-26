@@ -123,6 +123,19 @@ uv run python projects/agent-lab/multi_tool_agent.py
 
 （文件位置：`projects/agent-lab/rag_tool.py`、`tools_demo.py` 的 `multiply`）
 
+**空问题不抛异常，返回一句提示**：`search_kb("")` / `search_kb("  ")` → `问题为空，请提供具体要查的内容。`，`ToolMessage.status = success`。
+
+**为什么选返回字符串而不是抛 `ValueError`**（两种都实测过）：
+
+| 写法 | `ToolMessage.status` | 模型看到的内容 |
+|---|---|---|
+| `raise ValueError("问题为空")` | `error` | `Error: ValueError('问题为空') Please fix your mistakes.` |
+| `return "问题为空，请提供具体要查的内容。"` | `success` | 提示原文 |
+
+关键差别不在「好看」，在**熔断**：`multi_tool_agent.py` 的 `fail_counts` 只数 `status == "error"`。抛异常时模型空问 3 次就被强制终止整个任务；返回字符串则不会触发熔断，模型可以继续追问用户。空问题属于**输入不全**，不该当失败计数。
+
+另外，空问题检查放在 `ensure_index` **之前**：否则空问题也会触发一次付费重建。
+
 ### 二、复合任务的调用链
 
 同一句问话，模型**可能拆成并行、也可能拆成串行**，两种都实测到过。
