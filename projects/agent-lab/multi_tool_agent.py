@@ -94,4 +94,3 @@ if __name__ == "__main__":
         if getattr(m, "tool_calls", None):
             extra = f"  tool_calls={[t['name'] for t in m.tool_calls]}"
         print(f"{m.type}: {str(m.content)[:40]}{extra}")
-
