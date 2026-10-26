@@ -1,6 +1,6 @@
 # rag-kb · 企业制度知识库（项目②，毕设 #91 同源）
 
-RAG 知识库问答系统。当前进度：**文档处理 ✅ W9 → 向量化与检索 ✅ W10 → 拼上下文与问答 ✅ W11 → 检索优化与评估 ✅ W12 → 工程化（上传 / 索引 / 增量）✅ W13 → 网页版 ✅ W14 → 调优与成本 ✅ W15 → 部署（W16，进行中）**。
+RAG 知识库问答系统，包含文档处理、向量检索、带引用问答、上传与来源管理、评估和网页入口。当前阶段与验收状态只看 [当前任务](../../handbook/07-当前任务指令.md)。
 
 ## 文件地图（找函数先看这张表）
 
@@ -43,7 +43,7 @@ eval_run.py      ← loader, qa
 
 ## 数据与索引（10-26 重构）
 
-**所有路径由 `config.py` 按文件位置推算，不再有绝对路径。换机器、换目录直接能跑。**
+**当前 Web / Agent 的语料、索引、上传和成本日志路径由 `config.py` 按文件位置推算。** 换机器后仍需安装依赖、配置密钥；旧实验与参考脚本中的历史路径不代表当前入口。
 
 | 位置 | 内容 | 是否入库 |
 |---|---|---|
@@ -53,7 +53,7 @@ eval_run.py      ← loader, qa
 | `data/uploads/` | 网页上传文件落地 | ❌ gitignore |
 | `logs/cost_log.jsonl` | 花费日志 | ❌ gitignore（`*.jsonl`） |
 
-**索引是可再生数据，不进 git。** 丢了不用管 —— 任何入口第一次调用都会自动重建：
+**索引是派生数据，不进 git。** 当前 `search_kb` 和 Web `/query` 在空库时调用重建；`/sources`、删除接口和其他演示入口不承诺自动重建。也可显式调用：
 
 ```python
 from index_store import ensure_index
@@ -62,7 +62,7 @@ import config
 ensure_index(config.INDEX_PATH, config.DATA_DIR)  # 空则重建，非空直接返回
 ```
 
-`ensure_index` 是**幂等**的：调多少次结果一样。语料目录为空时抛 `ValueError` 说人话，而不是让 `query` 抛 `TypeError: Number of requested results 0`。
+`ensure_index` 返回块数：非空直接返回，空库只从 `data/` 顶层的 `.md` 重建；找不到 `.md` 时抛可读的 `ValueError`。它不校验非空库是否完整，也不自动恢复只存在于 `data/uploads/` 的上传文件。首次重建使用真实入口时会调用付费 embedding。
 
 ## 怎么跑（在仓库根目录）
 
@@ -116,7 +116,7 @@ flowchart TD
     RD --> BC["build_context"] --> L["DeepSeek"] --> R["answer + sources"]
 ```
 
-> 索引目录由启动哪个入口决定：`api_lab` → `index_offline`（3 维假向量），`api` → `index_real`（1024 维真向量）。图上两个框表示「写」和「读」两种动作，不是两个库。
+> 索引目录由启动哪个入口决定：`api_lab` → `data/_lab/index_offline/chroma_index/`（3 维假向量），`api` → `data/index/chroma_index/`（1024 维真向量）。图上两个框表示「写」和「读」两种动作，不是两个库。
 
 > `answer` 与 `sources` 共用同一次检索结果：`hits` 只检索一遍，既拼进 `build_context` 的参考材料交给模型，又原样作为 `sources` 返回，所以两者是同一批片段 —— 这就是引用可溯源。
 

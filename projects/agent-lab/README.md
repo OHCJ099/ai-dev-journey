@@ -1,6 +1,6 @@
 # agent-lab —— 项目③（Agent）
 
-两个文件，对应两个阶段：
+早期教学入口（W17、W18）：
 
 - `tools_demo.py` —— **W17**：四个工具 + 单轮 `function calling`（模型选工具 → 程序执行 → 模型汇总）
 - `react_loop.py` —— **W18**：手写 ReAct 多步循环（Thought → Action → Observation → 再 Thought），带终止条件、最大步数、错误喂回、重试上限
@@ -18,7 +18,7 @@
 
 ## 怎么跑
 
-两个文件都在仓库根目录下执行。`react_loop.py` 用 `from tools_demo import ...`，依赖同目录可导入。
+以下命令都在仓库根目录下执行。`react_loop.py` 用 `from tools_demo import ...`，依赖同目录可导入。
 
 ### W17：单轮 function calling
 
