@@ -107,7 +107,7 @@ uv run python projects/agent-lab/multi_tool_agent.py
 | 工具名 | 输入 / 返回 | 什么时候会被调用 |
 |---|---|---|
 | `search_kb` | `(question: str) -> str` | 问题涉及公司制度、规章、请假、报销等**需要查文档才能答**的内容时（模型自己判断「我不知道，得查」） |
-| `multiply` | `(a: float, b: float) -> str` | 需要两个数字相乘时（如折算金额）；模型直接算得出来时**不会**调用 |
+| `multiply` | `(a: float, b: float) -> str` | 任何涉及两数相乘的算式时（模型不自己口算，实测「3乘4」→ 1 次 tool_call）；闲聊时**不调用** |
 
 **两边都是 `-> str` 不是巧合**：`ToolNode` 会把任何返回值转成字符串再塞进 `ToolMessage`（实测返回 `list` 得到 `'[["请假制度.md", "年休假5天"], ...]'`），所以返回 str 是**选择**而非限制。
 
