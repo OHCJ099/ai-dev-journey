@@ -7,7 +7,9 @@ from index_store import open_index
 from retriever import embed
 
 
-def query_index(collection, question, k=TOP_K, source=None) -> list[tuple[str, str]]:
+def query_index(
+    collection, question, k=TOP_K, source=None, max_distance=None
+) -> list[tuple[str, str]]:
     if not question or not str(question).strip():
         raise ValueError(f"问题[{question!r}]为空")
 
@@ -24,7 +26,13 @@ def query_index(collection, question, k=TOP_K, source=None) -> list[tuple[str, s
 
     docs = result["documents"][0]
     metas = result["metadatas"][0]
-    return [(m.get("source"), d) for m, d in zip(metas, docs)]
+    dists = result["distances"][0]
+
+    return [
+        (m.get("source"), d)
+        for m, d, dist in zip(metas, docs, dists)
+        if max_distance is None or dist <= max_distance
+    ]
 
 
 def tokens_calculate(question: str, prompt_tokens: int, completion_tokens: int) -> None:
@@ -49,27 +57,31 @@ def tokens_calculate(question: str, prompt_tokens: int, completion_tokens: int) 
 
 
 if __name__ == "__main__":
-    collection = open_index(config.LAB_DIR / "ingest_lab")
-    q = "员工请假需要提前多久申请？"
+    collection = open_index(config.INDEX_PATH)
 
-    print("① 正常问题")
-    for i, (src, doc) in enumerate(query_index(collection, q), 1):
-        print(f"  {i}. 来源={src} | {doc[:30]}")
+    for label, q, expect in [
+        ("① 年假", "年假有几天", "应 3 条"),
+        ("② 年终奖", "年终奖怎么发", "应 0 条"),
+    ]:
+        hits = query_index(collection, q, max_distance=config.MAX_DISTANCE)
+        print(f"{label}（{expect}）→ 实际 {len(hits)} 条")
+        for i, (src, doc) in enumerate(hits, 1):
+            print(f"  {i}. 来源={src} | {doc[:30]}")
 
-    for label, bad in [("② 空串", ""), ("③ 纯空格", "   ")]:
-        print(label)
-        try:
-            query_index(collection, bad)
-        except ValueError as v:
-            print(f"  {v}")
+    # for label, bad in [("② 空串", ""), ("③ 纯空格", "   ")]:
+    #     print(label)
+    #     try:
+    #         query_index(collection, bad)
+    #     except ValueError as v:
+    #         print(f"  {v}")
 
-    print("④ 不存在的来源")
-    name = "不存在.md"
-    res = query_index(collection, q, source=name)
-    if not res:
-        print(f"  没找到来源为 {name} 的内容")
-    else:
-        print(f"  返回 {len(res)} 条")
+    # print("④ 不存在的来源")
+    # name = "不存在.md"
+    # res = query_index(collection, q, source=name)
+    # if not res:
+    #     print(f"  没找到来源为 {name} 的内容")
+    # else:
+    #     print(f"  返回 {len(res)} 条")
 
-    print("⑤ k=100")
-    print(f"  返回 {len(query_index(collection, q, k=100))} 条")
+    # print("⑤ k=100")
+    # print(f"  返回 {len(query_index(collection, q, k=100))} 条")

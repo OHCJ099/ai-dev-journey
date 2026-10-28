@@ -87,7 +87,9 @@ async def query(req: QueryRequest):
     collection = index_store.open_index(INDEX_PATH)
 
     try:
-        hits = query_lab.query_index(collection, req.question, req.k)
+        hits = query_lab.query_index(
+            collection, req.question, req.k, max_distance=config.MAX_DISTANCE
+        )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 

@@ -2,7 +2,10 @@ import os
 from typing import Annotated, TypedDict
 
 from dotenv import load_dotenv
-from langchain_core.messages import AIMessage
+from langchain_core.messages import (
+    AIMessage,
+    SystemMessage,  # 文件顶部
+)
 from langchain_core.runnables import RunnableConfig
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
@@ -12,6 +15,12 @@ from langgraph.prebuilt import ToolNode
 from pydantic import SecretStr
 from rag_tool import search_kb
 from tools_demo import multiply
+
+SYSTEM = """你是企业制度问答助手。
+1. 只能依据 search_kb 返回的材料回答，并说清出处。
+2. 材料里没有的，直接回答「知识库中未收录」，不要用你自己的知识补充，不要举例，不要猜测。
+3. 用户问题只有一部分与制度有关时，只答与制度有关的部分。"""
+
 
 load_dotenv()
 
@@ -49,7 +58,9 @@ def agent(state: State):
             ]
         }
 
-    resp = llm.bind_tools([multiply, search_kb]).invoke(state["messages"])
+    resp = llm.bind_tools([multiply, search_kb]).invoke(
+        [SystemMessage(content=SYSTEM), *state["messages"]]
+    )
     print(f"[agent] 返回 tool_calls={resp.tool_calls}")
     return {"messages": [resp]}
 
@@ -94,3 +105,26 @@ if __name__ == "__main__":
         if getattr(m, "tool_calls", None):
             extra = f"  tool_calls={[t['name'] for t in m.tool_calls]}"
         print(f"{m.type}: {str(m.content)[:40]}{extra}")
+
+    print("\n====== 边界验证 ======")
+    for i, q in enumerate(
+        [
+            "年假有几天",  # 相关
+            "加班有加班费吗",  # 半相关
+            "火星上种土豆需要几天年假",  # 无关
+        ],
+        1,
+    ):
+        cfg: RunnableConfig = {
+            "configurable": {"thread_id": f"T{i}"},
+            "recursion_limit": 10,
+        }
+        r = app.invoke({"messages": [{"role": "user", "content": q}]}, cfg)
+        calls = [
+            t["name"]
+            for m in r["messages"]
+            for t in (getattr(m, "tool_calls", None) or [])
+        ]
+        print(f"\n--- {q} ---")
+        print("工具调用:", calls)
+        print("最终回答:", r["messages"][-1].content)

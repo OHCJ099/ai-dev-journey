@@ -19,7 +19,9 @@ def search_kb(question: str) -> str:
     # 索引丢了（例如被清理）就现场重建，避免空库在 query 里抛出难懂的 TypeError。
     ensure_index(config.INDEX_PATH, config.DATA_DIR)
     collection = open_index(config.INDEX_PATH)
-    hits = query_lab.query_index(collection, question)
+    hits = query_lab.query_index(collection, question, max_distance=config.MAX_DISTANCE)
+    if not hits:
+        return "无命中"
     parts = []
     for index, hit in enumerate(hits, start=1):
         parts.append(f"[{index}]{hit[0]}：{hit[1]}\n\n")
@@ -29,3 +31,5 @@ def search_kb(question: str) -> str:
 if __name__ == "__main__":
     print(search_kb.invoke("年假有几天"))
     print(search_kb.invoke(" "))
+    print(repr(search_kb.invoke("年终奖怎么发")))  # 应吐你写的那句
+    print(len(search_kb.invoke("年假有几天")))  # 仍应是 1539

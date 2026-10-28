@@ -25,3 +25,4 @@ TOP_K = 3
 DEEPSEEK_FLASH_PROMPT = 0.000002
 DEEPSEEK_FLASH_COMPLETION = 0.000008
 COST_LOG_PATH = str(BASE_DIR / "logs" / "cost_log.jsonl")
+MAX_DISTANCE = 0.9  # 余弦/L2 距离超过它 → 视为「库里没有」，拒答
