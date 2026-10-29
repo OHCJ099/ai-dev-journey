@@ -13,7 +13,7 @@ from langgraph.graph import END, StateGraph
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
 from pydantic import SecretStr
-from rag_tool import search_kb
+from rag_tool import config, search_kb
 from tools_demo import multiply
 
 SYSTEM = """你是企业制度问答助手。
@@ -28,6 +28,7 @@ llm = ChatOpenAI(
     model=os.getenv("DEEPSEEK_MODEL") or "deepseek-v4.1-flash-cn",
     base_url=os.getenv("DEEPSEEK_BASE_URL") or "http://127.0.0.1:8787/v1",
     api_key=SecretStr(os.getenv("DEEPSEEK_API_KEY") or ""),
+    temperature=config.TEMPERATURE,
 )
 
 

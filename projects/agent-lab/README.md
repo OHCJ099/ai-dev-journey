@@ -230,11 +230,13 @@ ai     根据制度查到的结果，回答如下：…
 
 **④ 工具调用序列不稳定（演示风险）**
 
-- 现象：同一问题连续两次运行，工具序列不同。实测：
+- 现象：同一问题连续两次运行，工具序列不同。实测（**W21 ① 加配置之前**）：
   - 第 1 次：`search_kb ×2`，没有 `multiply`
   - 第 2 次：`search_kb ×3` + `multiply(3, 300)`
-- 原因：① 当前代码未设 `temperature`，走模型默认值，采样有随机性；② `search_kb` 的 `question` 是模型现场生成的，每次改写都不一样。
-- 后果：演示时「并行多工具」这个卖点不保证每次都出现。要稳定得设 `temperature=0`（属 W21 工程化范围，本阶段不动）。
+- 原因：① 采样有随机性；② `search_kb` 的 `question` 是模型现场生成的，每次改写都不一样。
+- **W21 ① 加了 `config.TEMPERATURE = 0.0`，没有收住**：改后连跑四遍（学员 2 次 + 教练 2 次），复合题两次出现「`search_kb` + `multiply(3,300)`」、两次只有「`search_kb` ×2」；火星题一次 ×1、一次 ×2。
+- 三段链路逐段验过：① 请求体确实带 `temperature: 0.0`（`ChatOpenAI._default_params` 实测，不传则该键完全不出现）；② 本地代理 `BuddyHub/backend/adapter.mjs` 的 `prepareBody` 用 `{ ...body }` 复制请求，只改 `stream` / message role / `tool_choice`，**没吞掉** temperature；③ 上游仍每次不同 —— **参数到了，不代表服务端照做**。
+- 结论：`temperature=0` 只降低采样随机性，**不是确定性开关**，而且服务端执行不执行不由客户端控制。要演示稳定只能靠编排（代码决定调哪几个工具）、`tool_choice` 强约束、或 prompt 里把动作写死 —— 属 W21 后续。
 
 ### 目录里的其他文件
 
