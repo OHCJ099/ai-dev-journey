@@ -32,3 +32,8 @@ extend-exclude = ["handbook", "docs", "notes"]
 
 [tool.pyright]
 extraPaths = ["projects/rag-kb"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+]
