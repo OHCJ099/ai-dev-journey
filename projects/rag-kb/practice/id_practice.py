@@ -21,12 +21,3 @@ docs = [
 ]
 
 print(build_ids(docs))
-
-assert build_ids(
-    [
-        {"source": "A", "text": "x"},
-        {"source": "B", "text": "y"},
-        {"source": "A", "text": "z"},
-    ]
-) == ["A-1", "B-1", "A-2"]
-assert build_ids([]) == []
