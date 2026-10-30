@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 import config
@@ -20,6 +21,12 @@ app = FastAPI()
 
 UPLOAD_PATH = config.UPLOAD_DIR
 INDEX_PATH = config.INDEX_PATH
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s"
+)
+
+logger = logging.getLogger(__name__)
 
 
 # 接收上传文件，保存后调用已有入库函数。
@@ -115,17 +122,23 @@ async def query(req: QueryRequest):
             ],
         )
     except AuthenticationError:
+        logger.exception("上游鉴权失败")
         raise HTTPException(status_code=500, detail="上游Key失效, 请联系管理员")
     except APITimeoutError:
+        logger.exception("上游请求超时")
         raise HTTPException(status_code=503, detail="请求超时, 请稍后")
     except APIConnectionError:
+        logger.exception("上游连接失败")
         raise HTTPException(status_code=503, detail="API连接失败")
     except APIStatusError as e:
         if e.status_code == 402:
+            logger.exception("上游余额不足")
             raise HTTPException(status_code=503, detail="上游余额不足, 请联系管理员")
         elif e.status_code == 429:
+            logger.exception("上游请求过于频繁")
             raise HTTPException(status_code=503, detail="请求太频繁，请重试")
         else:
+            logger.exception("上游返回未归类状态 %d", e.status_code)
             raise HTTPException(status_code=500, detail="上游未知错误, 请联系管理员")
 
     reply = resp.choices[0].message.content
@@ -137,6 +150,7 @@ async def query(req: QueryRequest):
         raise HTTPException(status_code=502, detail="无usage返回")
     query_lab.tokens_calculate(req.question, u.prompt_tokens, u.completion_tokens)
 
+    logger.info("查询成功，命中了 %d 条片段", len(hits))
     return {"answer": reply, "sources": hits}
 
 
