@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+from time import monotonic
 
 import config
 import index_store
@@ -8,7 +9,7 @@ import loader
 import qa
 import query_lab
 from api_models import QueryRequest
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.staticfiles import StaticFiles
 from openai import (
     APIConnectionError,
@@ -27,6 +28,23 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
+
+# 限流：同一个 IP，60 秒内最多 5 次查询
+WINDOW_SECONDS = 60
+MAX_PER_WINDOW = 5
+_buckets: dict[str, tuple[float, int]] = {}
+
+
+def rate_limit(request: Request):
+    ip = request.client.host if request.client else "unknown"
+    now = monotonic()
+    start, count = _buckets.get(ip, (now, 0))
+    if now - start >= WINDOW_SECONDS:  # 条件 1：窗口已经过期，重新开始计数
+        start, count = now, 0
+    count += 1
+    _buckets[ip] = (start, count)
+    if count > MAX_PER_WINDOW:  # 条件 2：超过上限，拒绝
+        raise HTTPException(status_code=429, detail="请求太频繁，请稍后再试")
 
 
 # 接收上传文件，保存后调用已有入库函数。
@@ -80,7 +98,7 @@ async def delete_source(name: str):
     return {"deleted": deleted}
 
 
-@app.post("/query")
+@app.post("/query", dependencies=[Depends(rate_limit)])
 async def query(req: QueryRequest):
     if req.question.strip() == "":
         raise HTTPException(status_code=400, detail="问题不能为空")

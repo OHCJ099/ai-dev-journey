@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from loader import (
     load_documents,  # 读取并清洗文档，返回带来源和正文的列表
 )
-from openai import OpenAI
+from openai import OpenAI, Timeout
 from retriever import embed  # 将文本转换成浮点数向量
 from splitter import split_text  # 将长文本切成有重叠的小块
 
@@ -24,7 +24,9 @@ ds_key = os.getenv("DEEPSEEK_API_KEY")
 if not ds_key:
     raise SystemExit("没找到 DEEPSEEK_API_KEY，请检查 .env")
 
-client = OpenAI(base_url=BASE_URL, api_key=ds_key, timeout=60.0)
+client = OpenAI(
+    base_url=BASE_URL, api_key=ds_key, timeout=Timeout(60, connect=5), max_retries=0
+)
 
 
 # 建立索引：每块文本都保存编号、来源和向量，便于检索与引用。
