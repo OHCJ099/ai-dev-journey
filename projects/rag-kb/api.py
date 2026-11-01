@@ -26,6 +26,8 @@ INDEX_PATH = config.INDEX_PATH
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s"
 )
+# openai 这个版本用的 HTTP 库是 httpx2，不是 httpx
+logging.getLogger("httpx2").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
@@ -52,21 +54,29 @@ def rate_limit(request: Request):
 async def upload(file: UploadFile = File(...)):  # noqa: B008 -- FastAPI 上传字段声明，不是可变默认容器。
     content = await file.read()
     if file.filename is None or file.filename.strip() == "":
+        logger.warning("文件名为空")
         raise HTTPException(status_code=400, detail="文件名不能为空")
     file_path = UPLOAD_PATH / Path(file.filename).name
 
     try:
         loaded_text = loader.parse_bytes(file_path.name, content)
     except ValueError as e:
+        logger.warning("解析失败：%s", file_path.name)
         raise HTTPException(status_code=400, detail=str(e))
 
-    UPLOAD_PATH.mkdir(parents=True, exist_ok=True)
-
-    file_path.write_bytes(content)
+    try:
+        UPLOAD_PATH.mkdir(parents=True, exist_ok=True)
+        file_path.write_bytes(content)
+        logger.info("文件写入成功：%s", file_path.name)
+    except OSError:
+        logger.exception("保存失败：%s", file_path)
+        raise HTTPException(status_code=500, detail="保存失败")
 
     try:
         count = ingest.ingest_file(file_path, INDEX_PATH, True, loaded_text=loaded_text)
+        logger.info("上传 %s 完成，入库 %d 块", file_path.name, count)
     except ValueError as e:
+        logger.warning("文件入库出错：%s", file_path.name)
         raise HTTPException(status_code=400, detail=str(e))
     return {"source": file_path.name, "blocks": count}
 
@@ -93,20 +103,25 @@ async def delete_source(name: str):
     collection = index_store.open_index(INDEX_PATH)
     deleted = index_store.delete_source(collection, name)
     if deleted == 0:
+        logger.warning("删除失败，文件不存在：%s", name)
         raise HTTPException(status_code=404, detail="来源不存在")
 
+    logger.info("文件删除成功：%s", name)
     return {"deleted": deleted}
 
 
 @app.post("/query", dependencies=[Depends(rate_limit)])
 async def query(req: QueryRequest):
     if req.question.strip() == "":
+        logger.warning("问题不能为空")
         raise HTTPException(status_code=400, detail="问题不能为空")
 
     # 索引为空（例如被清理过）时先重建，再走查询；重建失败如实报 500 而不是 404。
     try:
-        index_store.ensure_index(INDEX_PATH, config.DATA_DIR)
+        count = index_store.ensure_index(INDEX_PATH, config.DATA_DIR)
+        logger.info("索引就绪：%d 块", count)
     except ValueError as e:
+        logger.exception("索引构建失败：%s", INDEX_PATH)
         raise HTTPException(status_code=500, detail=str(e))
 
     collection = index_store.open_index(INDEX_PATH)
@@ -115,7 +130,9 @@ async def query(req: QueryRequest):
         hits = query_lab.query_index(
             collection, req.question, req.k, max_distance=config.MAX_DISTANCE
         )
+        logger.info("检索命中 %d 块", len(hits))
     except ValueError as e:
+        logger.warning("检索失败：%s", e)
         raise HTTPException(status_code=400, detail=str(e))
 
     index_hits: list[tuple[int, str, str]] = [
@@ -161,14 +178,15 @@ async def query(req: QueryRequest):
 
     reply = resp.choices[0].message.content
     if not reply:
+        logger.error("模型回复为空")
         raise HTTPException(status_code=502, detail="模型回复为空")
     u = resp.usage
 
     if not u:
+        logger.error("没有usage信息")
         raise HTTPException(status_code=502, detail="无usage返回")
     query_lab.tokens_calculate(req.question, u.prompt_tokens, u.completion_tokens)
 
-    logger.info("查询成功，命中了 %d 条片段", len(hits))
     return {"answer": reply, "sources": hits}
 
 

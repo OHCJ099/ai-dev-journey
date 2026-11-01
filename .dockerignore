@@ -1,0 +1,7 @@
+.venv
+.git
+pycache
+*.pyc
+projects/rag-kb/data/index
+projects/rag-kb/data/_lab
+projects/rag-kb/data/uploads
