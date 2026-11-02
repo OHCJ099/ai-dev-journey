@@ -6,6 +6,7 @@ import config
 import index_store
 import ingest
 import loader
+import os
 import qa
 import query_lab
 from api_models import QueryRequest
@@ -34,6 +35,7 @@ logger = logging.getLogger(__name__)
 # 限流：同一个 IP，60 秒内最多 5 次查询
 WINDOW_SECONDS = 60
 MAX_PER_WINDOW = 5
+DEMO_TOKEN = os.getenv("DEMO_TOKEN", "")
 _buckets: dict[str, tuple[float, int]] = {}
 
 
@@ -49,8 +51,15 @@ def rate_limit(request: Request):
         raise HTTPException(status_code=429, detail="请求太频繁，请稍后再试")
 
 
+def require_token(request: Request):
+    if not DEMO_TOKEN:
+        raise HTTPException(status_code=503, detail="服务未配置访问口令")
+    if request.headers.get("X-Demo-Token") != DEMO_TOKEN:
+        raise HTTPException(status_code=401, detail="需要访问口令")
+
+
 # 接收上传文件，保存后调用已有入库函数。
-@app.post("/upload")
+@app.post("/upload", dependencies=[Depends(require_token)])
 async def upload(file: UploadFile = File(...)):  # noqa: B008 -- FastAPI 上传字段声明，不是可变默认容器。
     content = await file.read()
     if file.filename is None or file.filename.strip() == "":
@@ -81,7 +90,7 @@ async def upload(file: UploadFile = File(...)):  # noqa: B008 -- FastAPI 上传�
     return {"source": file_path.name, "blocks": count}
 
 
-@app.get("/sources")
+@app.get("/sources", dependencies=[Depends(require_token)])
 async def get_collection():
     counts: dict[str, int] = {}
     d = []
@@ -98,7 +107,7 @@ async def get_collection():
     return {"sources": d}
 
 
-@app.delete("/source/{name}")
+@app.delete("/source/{name}", dependencies=[Depends(require_token)])
 async def delete_source(name: str):
     collection = index_store.open_index(INDEX_PATH)
     deleted = index_store.delete_source(collection, name)
@@ -110,7 +119,7 @@ async def delete_source(name: str):
     return {"deleted": deleted}
 
 
-@app.post("/query", dependencies=[Depends(rate_limit)])
+@app.post("/query", dependencies=[Depends(rate_limit), Depends(require_token)])
 async def query(req: QueryRequest):
     if req.question.strip() == "":
         logger.warning("问题不能为空")
