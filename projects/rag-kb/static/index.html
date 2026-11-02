@@ -60,6 +60,18 @@
     const answerBox = document.getElementById("answerBox");
     const sourcesBox = document.getElementById("sourcesBox");
     const listBox = document.getElementById("listBox");
+    
+
+    let token = localStorage.getItem("demoToken")
+
+    if (!token){
+      token = prompt("请输入口令")
+
+      if (token){
+        localStorage.setItem("demoToken", token)
+      }
+      
+    } 
 
     // 上传文件
     async function upload() {
@@ -67,7 +79,7 @@
       if (!file) return;
       const fd = new FormData();
       fd.append("file", file);
-      const resp = await fetch("/upload", { method: "POST", body: fd });
+      const resp = await fetch("/upload", { method: "POST", body: fd, headers: { "X-Demo-Token": token } });
       const data = await resp.json();
       uploadStatus.textContent = resp.ok
         ? "已入库：" + data.source + "，" + data.blocks + " 块"
@@ -81,7 +93,9 @@
       if (!question) return;
       const resp = await fetch("/query", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" ,
+        "X-Demo-Token": token
+        },
         body: JSON.stringify({ question: question}),
       });
       const data = await resp.json();
@@ -99,7 +113,16 @@
 
     // 加载来源列表
     async function loadSources() {
-      const resp = await fetch("/sources");
+      const resp = await fetch("/sources", {
+        headers: {"X-Demo-Token": token}
+        }
+      );
+      
+      if (!resp.ok){
+        listBox.textContent = "加载失败";
+        return;
+      }
+      
       const data = await resp.json();
       listBox.textContent = "";
       data.sources.sort((a, b) => b.blocks - a.blocks);
@@ -119,7 +142,7 @@
 
     // 删除某个来源
     async function remove(name) {
-      const resp = await fetch("/source/" + name, { method: "DELETE" });
+      const resp = await fetch("/source/" + name, { method: "DELETE", headers: { "X-Demo-Token": token } });
       const data = await resp.json();
       uploadStatus.textContent = resp.ok
         ? "已删除：" + name

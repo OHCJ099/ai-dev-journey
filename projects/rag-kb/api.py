@@ -1,4 +1,5 @@
 import logging
+import os
 from pathlib import Path
 from time import monotonic
 
@@ -6,7 +7,6 @@ import config
 import index_store
 import ingest
 import loader
-import os
 import qa
 import query_lab
 from api_models import QueryRequest
