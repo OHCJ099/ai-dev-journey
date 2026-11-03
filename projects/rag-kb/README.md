@@ -152,12 +152,65 @@ uv run uvicorn api_lab:app --host 0.0.0.0 --port 8765 --app-dir projects\rag-kb
 | **`APIStatusError`** (状态码 429 触发限流)          | **503**          | `请求太频繁，请重试`         | `ERROR`：`上游请求过于频繁` *(自动附带完整 traceback)*      |
 | **`APIStatusError`** (其他未归类状态码，如 500/502) | **500**          | `上游未知错误, 请联系管理员` | `ERROR`：`上游返回未归类状态 %d` *(自动附带完整 traceback)* |
 
+## Docker 启动
+创建新容器前，已有的同名容器需要先停止并处理；如果选择像今天这样改名保留，新名字也要避开已存在的容器名。
 
+在仓库根目录构建镜像：
+
+```powershell
+docker build -t rag-kb:v1 .
+```
+
+启动容器：
+
+```powershell
+docker run -d --name ragkb --env-file .env --env-file docker.env -p 9000:8000 -v D:/dev/ai-dev-journey/projects/rag-kb/data/index:/app/projects/rag-kb/data/index rag-kb:v1
+```
+
+- `--env-file 文件路径`：表示“从这个文件读取环境变量配置”。
+- `-v`：把电脑上的目录，连接到容器里的目录。
+- 命令中的 `D:/dev/ai-dev-journey/.../index` 是本机路径，换电脑时需替换成实际的索引目录；启动前需要在仓库根目录准备好 `.env` 和 `docker.env`。
+
+## 隧道开关
+
+Cloudflare 隧道将公网请求转发给本机的项目服务。首次创建并启动隧道容器：
+
+```powershell
+docker run -d --name cf-demo cloudflare/cloudflared:latest tunnel --url http://host.docker.internal:9000
+```
+
+查看日志，找到当前的 `trycloudflare.com` 公网链接：
+
+```powershell
+docker logs cf-demo
+```
+
+关闭隧道：
+
+```powershell
+docker stop cf-demo
+```
+
+容器已经创建过时，关闭后可再次启动，不需要重复执行 `docker run`：
+
+```powershell
+docker start cf-demo
+```
+
+重新启动后再查看日志，确认当前链接。该隧道为临时演示用途，链接可能改变。
+
+## 演示口令
+
+鉴权口令获取与前端鉴权核对：Docker 创建容器时，通过 --env-file 读取 .env，把 DEMO_TOKEN 注入容器的环境变量。后端读取前端发送的请求头中的“X-demo-token”，后端没有配置口令返回 503；配置了口令，但请求没带或带错时返回 401。
+
+前端口令输入与保存：前端在启动时检测是否有已保存的TOKEN，如果没有则弹出提示框输入口令，输入后保存到本地存储中
+
+修改 `.env` 中的口令后，需要重新创建容器，新的环境变量才会生效。
 
 ## 已知限制
 
 1. 只支持.md和.pdf文件的上传，上传其他类型文件会抛出错误。
-2. 没有权限鉴别或身份认证功能，任何用户在访问的时候都能够自由上传及删除文件。
+2. 大家共用同一个演示口令，系统不能区分不同使用者；拿到口令的人都可以上传和删除来源。
 3. 问答每一轮对话都不会带上上下文，每轮对话AI都没有记忆。
 4. 前端只处理了 HTTP 错误（4xx/5xx），未捕获网络层异常；服务未启动或断网时点击无任何反馈。
 5. 向量化那一步没有兜底：`retriever.embed` 的 dashscope 地址是写死的，不跟 `DEEPSEEK_BASE_URL` 走，而且它抛错时 `/query` 接不住，会直接 500 且没有业务日志。
