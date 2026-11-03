@@ -119,7 +119,7 @@ async def delete_source(name: str):
     return {"deleted": deleted}
 
 
-@app.post("/query", dependencies=[Depends(rate_limit), Depends(require_token)])
+@app.post("/query", dependencies=[Depends(require_token), Depends(rate_limit)])
 async def query(req: QueryRequest):
     if req.question.strip() == "":
         logger.warning("问题不能为空")
