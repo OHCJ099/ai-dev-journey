@@ -6,6 +6,23 @@
 > 节奏：**28 小时/周**（工作日 4h + 周末 4-6h）；25h 试运行已于 10-05 结束，10-09 确认维持 28h。
 > 起点：2026-09-15。
 
+## 项目：企业制度知识库问答
+
+企业制度智能问答系统：用语义检索代替关键字匹配，解决关键字查不到、查不准的问题。回答带来源引用，支持文档上传与来源管理，检索能力同时接成 Agent 工具。
+
+- 技术栈：Python / FastAPI / Pydantic / JavaScript / LangChain / LangGraph / Chroma / Docker
+- 代码与说明：[projects/rag-kb/README.md](projects/rag-kb/README.md)
+
+在仓库根目录启动：
+
+```powershell
+docker build -t rag-kb:v1 .
+```
+
+```powershell
+docker run -d --name ragkb --env-file .env --env-file docker.env -p 9000:8000 -v D:/dev/ai-dev-journey/projects/rag-kb/data/index:/app/projects/rag-kb/data/index rag-kb:v1
+```
+
 ## 技术优先级（从高到低）
 1. Python 基础与工程能力
 2. 大模型 API 调用（DeepSeek / 通义千问）
